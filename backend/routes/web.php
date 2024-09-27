@@ -1,20 +1,33 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ControllerHome;
+// use App\Http\Controllers\ControllerHome;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ReservationController;
+// Route::get('/', [ControllerHome::class , 'index'])->name(name: "index");
+use App\Http\Controllers\SessionController;
 
-Route::get('/', [ControllerHome::class , 'index'])->name(name: "index");
+Route::get('/session', [SessionController::class, 'showForm'])->name('session.form');
+Route::post('/session', [SessionController::class, 'storeData'])->name('session.store');
 
-Route::get('/dangky', [ControllerHome::class , 'dangky']);
-Route::post('/dangky', [ControllerHome::class , 'xacthucdangky'])->name(name: "xacthucdangky");
-Route::get('/nhapmaxacthuc', [ControllerHome::class , 'nhapmaxacthuc']);
-Route::post('/nhapmaxacthuc', [ControllerHome::class , 'checkmaxacnhan'])->name(name: "checkmaxacnhan");
-
-
-Route::get('/dangnhap', [ControllerHome::class , 'dangnhap']);
-Route::post('/dangnhap', [ControllerHome::class , 'xacthucdangnhap'])->name(name: "dangnhap");
+Route::get('/t', [RegisterController::class , 'test']);
+Route::post('/dangky', [RegisterController::class , 'register']);
+Route::get('/nhapmaxacthuc', [RegisterController::class , 'nhapmaxacthuc']);
+Route::post('/nhapmaxacthuc', [RegisterController::class , 'verifyAndCheckCode']);
 
 
+Route::get('/dangnhap', [LoginController::class , 'dangnhap']);
+Route::post('/dangnhap', [LoginController::class , 'authenticationLogin']);
 
-Route::post('/datban', [ControllerHome::class , 'datban'])->name("datban");
-Route::post('/xacthuc', [ControllerHome::class , 'xacthucc'])->name("xacthuc");
+
+Route::get('/info', [CustomerController::class , 'show']);
+Route::post('/edit', [CustomerController::class , 'datban']);
+Route::post('/xacthuc', [CustomerController::class , 'verifyAndCheckCode']);
+Route::post('/xoataikhoan', [CustomerController::class , 'destroy']);
+
+
+Route::get('/datban', [ReservationController::class , 'getAvailableTables']);
+Route::get('/chitiet', [ReservationController::class , 'getUserReservations']);
+

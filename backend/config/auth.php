@@ -62,7 +62,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\Database\KhachHang::class),
+            'model' => env('AUTH_MODEL', App\Models\Database\Customer::class),
         ],
 
         // 'users' => [
