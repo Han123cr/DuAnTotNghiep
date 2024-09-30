@@ -31,3 +31,22 @@ Route::post('/xoataikhoan', [CustomerController::class , 'destroy']);
 Route::get('/datban', [ReservationController::class , 'getAvailableTables']);
 Route::get('/chitiet', [ReservationController::class , 'getUserReservations']);
 
+use App\Http\Controllers\MenuController;
+
+Route::get('/menus', [MenuController::class, 'menus'])->name('menus');
+
+use App\Http\Controllers\CartController;
+
+
+// Thêm món vào giỏ hàng
+// Thêm món vào giỏ hàng
+Route::post('/cart', [CartController::class, 'addToCart'])->name('cart.add');
+
+// Lấy giỏ hàng của khách hàng
+Route::get('/cart/{customerID}', [CartController::class, 'getCart'])->name('cart.get');
+
+// Cập nhật món trong giỏ hàng
+Route::put('/cart/items/{cartItemID}', [CartController::class, 'updateCart'])->name('cart.update');
+
+// Xóa món khỏi giỏ hàng
+Route::delete('/cart/items/{cartItemID}', [CartController::class, 'removeFromCart'])->name('cart.remove');
