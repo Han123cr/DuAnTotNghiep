@@ -26,6 +26,7 @@ class MenuItem extends Model
         'price',
         'discount',
         'size',
+        'statusToday',
         'status',
         'menuID'
     ];

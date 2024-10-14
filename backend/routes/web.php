@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 // Controller Admin;
 use App\Http\Controllers\AdminControllers\LoginAdminController;
+use App\Http\Controllers\AdminControllers\MenuAdminController;
+use App\Http\Controllers\AdminControllers\MenuItemAdminController;
 // use App\Http\Controllers\ControllerHome;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
@@ -38,6 +40,25 @@ Route::prefix('admin')->group(function(){
     Route::middleware((['auth.admin']))->group(function () {
         //Đăng xuất
         Route::post('/logout', [LoginController::class , 'logout']);
+        //Lấy danh sách menu
+        Route::get('/getMenus', action: [MenuAdminController::class , 'getMenus']);
+        //Thêm menu mới
+        Route::post('/storeMenu', action: [MenuAdminController::class , 'storeMenu']);
+        //Sửa menu 
+        Route::post('/updateMenu', action: [MenuAdminController::class , 'updateMenu']);
+        //Xóa menu 
+        Route::post('/destroyMenu', action: [MenuAdminController::class , 'destroyMenu']);
+
+        //Lấy danh sách menuItem
+        Route::get('/getMenuItems', [MenuItemAdminController::class , 'getMenuItems']);
+        //Thêm sản phẩm
+        Route::post('/storeMenuItem', [MenuItemAdminController::class , 'storeMenuItem']);
+        //Sửa sản phẩm
+        Route::post('/updateMenuItem', [MenuItemAdminController::class , 'updateMenuItem']);
+        //Xóa sản phẩm
+        Route::post('/destroyMenuItem', [MenuItemAdminController::class , 'destroyMenuItem']);
+
+
     });
 });
 
@@ -60,7 +81,12 @@ Route::prefix('/')->group(function(){
 
     //Đăng nhập
     Route::post('/login', [LoginController::class , 'login']);
+    //Quên mật khẩu
     Route::post('/forgotPassword', [LoginController::class , 'forgotPassword']);
+    //Mã xác nhận
+    Route::post('/verifyResetCode', [LoginController::class , 'verifyResetCode']);
+    //Mật khẩu mới
+    Route::post('/resetPassword', [LoginController::class , 'resetPassword']);
 
     //Trả dữ liệu menu và món ăn
     Route::get('/getMenus', [MenuController::class , 'getMenus']);

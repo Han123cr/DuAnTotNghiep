@@ -66,9 +66,9 @@ class LoginController extends Controller
 
         // Kiểm tra xem đầu vào là email hay số điện thoại
         if (filter_var($email_or_phone, FILTER_VALIDATE_EMAIL)) {
-            $user = Customer::where('email', $email_or_phone);
+            $user = Customer::where('email', $email_or_phone)->first();
         } else {
-            $user = Customer::where('phoneNumber', $email_or_phone);
+            $user = Customer::where('phoneNumber', $email_or_phone)->first();
         }
 
         if (!$user) {
@@ -101,7 +101,7 @@ class LoginController extends Controller
 
         $code = $request->input('verification_code');
 
-        if (session('verification_code') === $code) {
+        if (session('verification_code') == $code) {
             return response()->json(['message' => 'Mã xác nhận chính xác.'], 200);
         }
 

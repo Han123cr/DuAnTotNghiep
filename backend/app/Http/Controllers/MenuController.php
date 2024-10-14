@@ -43,6 +43,7 @@ class MenuController extends Controller
                         'price' => $item->price,
                         'discount' => $item->discount,
                         'size' => $item->size,
+                        'statusToday' => $item->statusToday,
                         'status' => $item->status,
                     ];
                 }),

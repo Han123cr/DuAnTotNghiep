@@ -103,6 +103,7 @@ CREATE TABLE menuItems (
     price DECIMAL(10, 2) NOT NULL,                       -- Giá món ăn
     discount DECIMAL(10, 2),                             -- Giá giảm (nếu có)
     size VARCHAR(255),                                   -- Kích thước món ăn
+    statusToday ENUM('in-stock', 'out-of-stock') DEFAULT 'in-stock', -- Trạng thái còn hết hàng
     status ENUM('display', 'hidden') DEFAULT 'display',  -- Trạng thái hiển thị
     menuID INT,                                          -- Khóa ngoại tới bảng menus
     FOREIGN KEY (menuID) REFERENCES menus(menuID) ON DELETE CASCADE
@@ -175,64 +176,65 @@ CREATE TABLE tableBillDetails (
     FOREIGN KEY (menuItemID) REFERENCES menuItems(menuItemID) ON DELETE CASCADE
 );
 
--- Bảng đánh giá đặt bàn (tableReviews)
-CREATE TABLE tableReviews (
-    tableReviewID INT AUTO_INCREMENT PRIMARY KEY,          -- ID đánh giá đặt bàn
-    rating INT CHECK (rating >= 1 AND rating <= 5),        -- Đánh giá từ 1 đến 5 sao
-    comment TEXT,                                          -- Nhận xét
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,         -- Ngày tạo đánh giá
-    customerID INT,                                        -- Khóa ngoại tới khách hàng
-    tableOrderID INT,                                      -- Khóa ngoại tới đơn đặt bàn
-    FOREIGN KEY (customerID) REFERENCES customers(customerID) ON DELETE CASCADE,
-    FOREIGN KEY (tableOrderID) REFERENCES tableOrders(tableOrderID) ON DELETE CASCADE
-);
 
--- Bảng đánh giá món ăn (foodReviews)
-CREATE TABLE foodReviews (
-    foodReviewID INT AUTO_INCREMENT PRIMARY KEY,           -- ID đánh giá món ăn
-    rating INT CHECK (rating >= 1 AND rating <= 5),        -- Đánh giá từ 1 đến 5
-    comment TEXT,                                          -- Nhận xét
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,         -- Ngày tạo đánh giá
-    customerID INT,                                        -- Khóa ngoại tới khách hàng
-    menuItemID INT,                                        -- Khóa ngoại tới món ăn
+
+-- Bảng giỏ hàng (carts)
+CREATE TABLE carts (
+    cartItemID INT AUTO_INCREMENT PRIMARY KEY,        -- ID chi tiết giỏ hàng
+    quantity INT NOT NULL,                            -- Số lượng món ăn
+    notes  TEXT,                                        -- Ghi chú món ăn
+    menuItemID INT,                                   -- Khóa ngoại tới bảng menuItems
+    customerID INT,                                  -- Khóa ngoại tới bảng customers
     FOREIGN KEY (customerID) REFERENCES customers(customerID) ON DELETE CASCADE,
     FOREIGN KEY (menuItemID) REFERENCES menuItems(menuItemID) ON DELETE CASCADE
 );
 
--- Bảng nhật ký hoạt động (activityLogs)
-CREATE TABLE activityLogs (
-    logID INT AUTO_INCREMENT PRIMARY KEY,                  -- ID nhật ký
-    description TEXT NOT NULL,                             -- Mô tả hoạt động
-    logTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,           -- Thời gian ghi nhật ký
-    customerID INT,                                        -- ID khách hàng (nếu có)
-    staffID INT,                                           -- ID nhân viên (nếu có)
-    adminID INT,                                           -- ID admin (nếu có)
-    FOREIGN KEY (customerID) REFERENCES customers(customerID) ON DELETE SET NULL,
-    FOREIGN KEY (staffID) REFERENCES staffs(staffID) ON DELETE SET NULL,
-    FOREIGN KEY (adminID) REFERENCES admin(adminID) ON DELETE SET NULL
-);
-
--- Bảng phản hồi từ khách hàng (customerFeedback)
-CREATE TABLE customerFeedback (
-    feedbackID INT AUTO_INCREMENT PRIMARY KEY,             -- ID phản hồi
-    subject VARCHAR(255) NOT NULL,                         -- Chủ đề phản hồi
-    message TEXT NOT NULL,                                 -- Nội dung phản hồi
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,         -- Ngày gửi phản hồi
-    customerID INT,                                        -- Khóa ngoại tới khách hàng
-    staffID INT,                                           -- Khóa ngoại tới nhân viên (nếu có)
+-- Bảng đơn hàng (orders)
+CREATE TABLE orders (
+    orderID INT AUTO_INCREMENT PRIMARY KEY,          -- ID đơn hàng
+    orderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,   -- Ngày đặt hàng
+    status VARCHAR(50) NOT NULL,                     -- Trạng thái đơn hàng
+    totalAmount DECIMAL(10, 2) NOT NULL,            -- Tổng giá trị đơn hàng
+    transactionCode TEXT,                            -- Mã giao dịch
+    paymentMethodID INT,                             -- Khóa ngoại tới bảng paymentMethod
+    customerID INT,                                  -- Khóa ngoại tới bảng customers
+    addressID INT,                                   -- Khóa ngoại tới bảng addresses
+    voucherID INT,                               -- Khóa ngoại tới bảng vouchers
+    FOREIGN KEY (voucherID) REFERENCES vouchers(voucherID) ON DELETE CASCADE,
     FOREIGN KEY (customerID) REFERENCES customers(customerID) ON DELETE CASCADE,
-    FOREIGN KEY (staffID) REFERENCES staffs(staffID) ON DELETE SET NULL
+    FOREIGN KEY (addressID) REFERENCES addresses(addressID) ON DELETE SET NULL,
+    FOREIGN KEY (paymentMethodID) REFERENCES paymentMethods(paymentMethodID) ON DELETE SET NULL
 );
 
--- Bảng lịch sử đặt bàn (tableOrderHistory)
-CREATE TABLE tableOrderHistory (
-    historyID INT AUTO_INCREMENT PRIMARY KEY,              -- ID lịch sử đặt bàn
-    tableOrderID INT NOT NULL,                             -- ID đơn đặt bàn
-    action VARCHAR(255) NOT NULL,                          -- Hành động (tạo, cập nhật, hủy, hoàn thành)
-    performedBy VARCHAR(255),                              -- Thực hiện bởi (nhân viên, khách hàng)
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,         -- Thời điểm thực hiện
+-- Bảng chi tiết đơn hàng (orderDetails)
+CREATE TABLE orderDetails (
+    orderDetailID INT AUTO_INCREMENT PRIMARY KEY,     -- ID chi tiết đơn hàng
+    quantity INT NOT NULL,                           -- Số lượng món ăn
+    price DECIMAL(10, 2) NOT NULL,                   -- Giá món ăn
+    discount DECIMAL(10, 2),                         -- Giảm giá (nếu có)
+    total DECIMAL(10, 2) NOT NULL,                   -- Tổng giá sau khi tính
+    orderID INT,                                     -- Khóa ngoại tới bảng orders
+    menuItemID INT,                                  -- Khóa ngoại tới bảng menuItems
+    FOREIGN KEY (orderID) REFERENCES orders(orderID) ON DELETE CASCADE,
+    FOREIGN KEY (menuItemID) REFERENCES menuItems(menuItemID) ON DELETE CASCADE
+);
+
+ 
+-- Bảng đánh giá dịch vụ (serviceReviews)
+CREATE TABLE serviceReviews (
+    serviceReviewID INT AUTO_INCREMENT PRIMARY KEY,                -- ID đánh giá
+    rating INT CHECK (rating >= 1 AND rating <= 5),        -- Đánh giá từ 1 đến 5
+    comment TEXT,                                          -- Nhận xét
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,         -- Ngày tạo đánh giá
+    reviewType ENUM('order', 'table') NOT NULL,           -- Loại đánh giá: 'order' hoặc 'table'
+    orderID INT DEFAULT NULL,                               -- Khóa ngoại tới bảng đơn hàng
+    tableOrderID INT DEFAULT NULL,                          -- Khóa ngoại tới bảng đơn bàn
+    customerID INT NOT NULL,                                -- Khóa ngoại tới bảng khách hàng
+    FOREIGN KEY (customerID) REFERENCES customers(customerID) ON DELETE CASCADE,
+    FOREIGN KEY (orderID) REFERENCES orders(orderID) ON DELETE CASCADE,
     FOREIGN KEY (tableOrderID) REFERENCES tableOrders(tableOrderID) ON DELETE CASCADE
 );
+
 
 -- Thêm dữ liệu mẫu vào bảng customers
 -- Chèn thêm khách hàng
@@ -305,63 +307,63 @@ INSERT INTO admin (loginName, password) VALUES
 
 -- Chèn dữ liệu vào bảng menu
 INSERT INTO menus (menuName, menuImage) VALUES 
-('Món tráng miệng', '/img'),
-('Salad', '/img'),
-('Đồ uống', '/img'),
-('Pizza', '/img'),
-('Mì Ý', '/img'),
-('Beefsteak', '/img');
+('Món Tráng Miệng', 'storage/menu-images/mon_trang_mieng.png'),
+('Salad', 'storage/menu-images/salad.png'),
+('Đồ Uống', 'storage/menu-images/do_uong.png'),
+('Pizza', 'storage/menu-images/pizza.png'),
+('Mì Ý', 'storage/menu-images/my_y.png'),
+('Beefsteak', 'storage/menu-images/beefsteak.png');
 
 
 INSERT INTO menuItems (itemName, itemImage, description, price, menuID) VALUES
 -- Món tráng miệng
-('Bánh flan', 'banh_flan.png', 'Món tráng miệng truyền thống với lớp kem trứng mềm mịn và lớp caramel ngọt ngào.', 25000, 1),
-('Bánh Esterhazy', 'banh_esterhazy.png', 'Bánh ngọt nổi tiếng từ Hungary, với nhiều lớp kem bơ hạt dẻ và lớp bột mỏng giòn tan.', 40000, 1),
-('Kem socola', 'kem_socola.png', 'Kem vị socola đậm đà, ngọt ngào và mát lạnh, thích hợp để tráng miệng.', 30000, 1),
-('Kẹo cuộn', 'keo_cuon.png', 'Loại kẹo cuộn nhiều lớp, ngọt ngào, bắt mắt, là món ăn vặt phổ biến và thú vị.', 10000, 1),
-('Rau câu jelly', 'rau_cau_jelly.png', 'Thạch rau câu với hương vị trái cây đa dạng, mát lạnh và dai giòn.', 15000, 1),
+('Bánh flan', 'storage/menuItem-images/mon-trang-mieng/banh_flan.png', 'Món tráng miệng truyền thống với lớp kem trứng mềm mịn và lớp caramel ngọt ngào.', 25000, 1),
+('Bánh Esterhazy', 'storage/menuItem-images/mon-trang-mieng/banh_esterhazy.png', 'Bánh ngọt nổi tiếng từ Hungary, với nhiều lớp kem bơ hạt dẻ và lớp bột mỏng giòn tan.', 40000, 1),
+('Kem socola', 'storage/menuItem-images/mon-trang-mieng/kem_socola.png', 'Kem vị socola đậm đà, ngọt ngào và mát lạnh, thích hợp để tráng miệng.', 30000, 1),
+('Kẹo cuộn', 'storage/menuItem-images/mon-trang-mieng/keo_cuon.png', 'Loại kẹo cuộn nhiều lớp, ngọt ngào, bắt mắt, là món ăn vặt phổ biến và thú vị.', 10000, 1),
+('Rau câu jelly', 'storage/menuItem-images/mon-trang-mieng/rau_cau_jelly.png', 'Thạch rau câu với hương vị trái cây đa dạng, mát lạnh và dai giòn.', 15000, 1),
 
 -- Salad
-('Salad cá hồi', 'salad_ca_houi.png', 'Cá Hồi | Rau mầm, rong biển, cà chua & rong biển tosaka đỏ-xanh kèm sốt mè rang.', 10.00, 2),
-('Salad nhiệt đới', 'salad_nhiet_doi.png', 'Rong nho, Rau mầm, rong biển, cà chua | Bạch tuộc Nhật, Cá Trích Ép Trứng, Cá Hồi kèm sốt mè rang.', 9.00, 2),
-('Salad thanh cua', 'salad_thanh_cua.png', 'Thanh cua, Rong biển tosaka xanh - đỏ, rau mầm, rong biển, cà chua kèm sốt mè rang.', 9.00, 2),
-('Salad da giòn', 'salad_da_gion.png', 'Da cá Hồi chiên giòn| Rong nho| Lolo xanh| Rau mầm, rong biển, cà chua & rong biển tosaka đỏ-xanh kèm sốt Salad.', 8.00, 2),
-('Salad cá ngừ', 'salad_ca_nguu.png', 'Rong nho| Rau mầm, rong biển, cà chua | Cá Ngừ chín trộn mayo | Bơ trái kèm sốt mè rang.', 12.00, 2),
-('Salad rong nho', 'salad_rong_nho.png', 'Rong nho| Rau mầm, rong biển, cà chua & rong biển tosaka đỏ-xanh kèm sốt mè rang.', 7.00, 2),
-('Salad Cá Hồi & Bơ', 'salad_ca_houi_va_bo.png', 'Cá hồi| Bơ trái| Xà lách búp mỹ| Rong nho tosaka| Rong nho kèm sốt mè rang.', 13.00, 2),
-('Salad Mix', 'salad_mix.png', 'Cá hồi| Cá trích ép trứng vàng & đỏ| Tôm thẻ| Bạch tuộc Nhật| Thanh cua| Sò đỏ Canada| Các loại rau mầm, rong biển, cà chua, xà lách kèm sốt mè rang.', 15.00, 2),
+('Salad cá hồi', 'storage/menuItem-images/salad/salad_ca_houi.png', 'Cá Hồi | Rau mầm, rong biển, cà chua & rong biển tosaka đỏ-xanh kèm sốt mè rang.', 10.00, 2),
+('Salad nhiệt đới', 'storage/menuItem-images/salad/salad_nhiet_doi.png', 'Rong nho, Rau mầm, rong biển, cà chua | Bạch tuộc Nhật, Cá Trích Ép Trứng, Cá Hồi kèm sốt mè rang.', 9.00, 2),
+('Salad thanh cua', 'storage/menuItem-images/salad/salad_thanh_cua.png', 'Thanh cua, Rong biển tosaka xanh - đỏ, rau mầm, rong biển, cà chua kèm sốt mè rang.', 9.00, 2),
+('Salad da giòn', 'storage/menuItem-images/salad/salad_da_gion.png', 'Da cá Hồi chiên giòn| Rong nho| Lolo xanh| Rau mầm, rong biển, cà chua & rong biển tosaka đỏ-xanh kèm sốt Salad.', 8.00, 2),
+('Salad cá ngừ', 'storage/menuItem-images/salad/salad_ca_nguu.png', 'Rong nho| Rau mầm, rong biển, cà chua | Cá Ngừ chín trộn mayo | Bơ trái kèm sốt mè rang.', 12.00, 2),
+('Salad rong nho', 'storage/menuItem-images/salad/salad_rong_nho.png', 'Rong nho| Rau mầm, rong biển, cà chua & rong biển tosaka đỏ-xanh kèm sốt mè rang.', 7.00, 2),
+('Salad Cá Hồi & Bơ', 'storage/menuItem-images/salad/salad_ca_houi_va_bo.png', 'Cá hồi| Bơ trái| Xà lách búp mỹ| Rong nho tosaka| Rong nho kèm sốt mè rang.', 13.00, 2),
+('Salad Mix', 'storage/menuItem-images/salad/salad_mix.png', 'Cá hồi| Cá trích ép trứng vàng & đỏ| Tôm thẻ| Bạch tuộc Nhật| Thanh cua| Sò đỏ Canada| Các loại rau mầm, rong biển, cà chua, xà lách kèm sốt mè rang.', 15.00, 2),
 
 -- Đồ uống
-('Coca', 'coca.png', 'Nước giải khát có ga vị coca cola, được ưa chuộng trong các bữa tiệc hoặc dùng hàng ngày.', 15.00, 3),
-('Brandy - 10th Mountain éT 2012 Vail.co', 'brandy_10th_mountain.png', 'Rượu brandy cao cấp, với hương vị trái cây đậm đà, được sản xuất tại Colorado, thích hợp cho những dịp đặc biệt.', 2500000, 3),
-('Nước Khoáng Vivant', 'nuoc_khoang_vivant.png', 'Nước khoáng tự nhiên bổ sung khoáng chất, có ga nhẹ, mang lại cảm giác tươi mát.', 12.00, 3),
-('Rượu Whisky Ballantine - G82 255', 'ruou_whisky_ballantines.png', 'Rượu whisky Scotch với hương vị mạnh mẽ, nồng ấm, thích hợp cho những bữa tiệc sang trọng.', 1200000, 3),
-('Rượu vang Passion - Reserva 750ml', 'ruou_vang_passion.png', 'Rượu vang đậm đà với hương vị trái cây chín mọng, thích hợp khi dùng kèm các món thịt.', 500000, 3),
+('Coca', 'storage/menuItem-images/do-uong/coca.png', 'Nước giải khát có ga vị coca cola, được ưa chuộng trong các bữa tiệc hoặc dùng hàng ngày.', 15.00, 3),
+('Brandy - 10th Mountain éT 2012 Vail.co', 'storage/menuItem-images/do-uong/brandy_10th_mountain.png', 'Rượu brandy cao cấp, với hương vị trái cây đậm đà, được sản xuất tại Colorado, thích hợp cho những dịp đặc biệt.', 2500000, 3),
+('Nước Khoáng Vivant', 'storage/menuItem-images/do-uong/nuoc_khoang_vivant.png', 'Nước khoáng tự nhiên bổ sung khoáng chất, có ga nhẹ, mang lại cảm giác tươi mát.', 12.00, 3),
+('Rượu Whisky Ballantine - G82 255', 'storage/menuItem-images/do-uong/ruou_whisky_ballantines.png', 'Rượu whisky Scotch với hương vị mạnh mẽ, nồng ấm, thích hợp cho những bữa tiệc sang trọng.', 1200000, 3),
+('Rượu vang Passion - Reserva 750ml', 'storage/menuItem-images/do-uong/ruou_vang_passion.png', 'Rượu vang đậm đà với hương vị trái cây chín mọng, thích hợp khi dùng kèm các món thịt.', 500000, 3),
 
 -- Pizza
-('Pizza Hải Sản Nhiệt Đới', 'pizza_hai_san_nhiet_doi.png', 'Tôm, nghêu, mực cua, dứa với sốt Thousand Island.', 159000, 4),
-('Pizza Thịt Xông Khói', 'pizza_thit_xong_khoi.png', 'Thịt giăm bông, thịt xông khói và hai loại rau của ớt xanh, cà chua.', 149000, 4),
-('Pizza Xúc Xích Ý', 'pizza_xuc_xich_y.png', 'Xúc xích kiểu Ý trên nền sốt cà chua.', 139000, 4),
-('Pizza Thịt Nguội & Nấm', 'pizza_thit_nguoi_va_nam.png', 'Pizza giăm bông và nấm đem đến cho bạn những trải nghiệm thú vị.', 139000, 4),
-('Pizza Hawaiian', 'pizza_hawaiian.png', 'Giăm bông, thịt muối và dứa.', 139000, 4),
-('Pizza Rau Củ', 'pizza_rau_cu.png', 'Hành, ớt chuông, nấm, dứa, cà chua.', 119000, 4),
-('Pizza Hải Sản Cao Cấp', 'pizza_hai_san_cao_cap.png', 'Tôm, cua, mực và nghêu với sốt Marinara.', 159000, 4),
-('Pizza Đặc Biệt', 'pizza_dac_biet.png', 'Xúc xích bò, giăm bông, thịt xông khói và cả thế giới rau phong phú.', 149000, 4),
-('Pizza Gà Nướng', 'pizza_ga_nuong.png', 'Gà nướng, gà bơ tỏi và gà ướp sốt nấm.', 149000, 4),
+('Pizza Hải Sản Nhiệt Đới', 'storage/menuItem-images/pizza/pizza_hai_san_nhiet_doi.png', 'Tôm, nghêu, mực cua, dứa với sốt Thousand Island.', 159000, 4),
+('Pizza Thịt Xông Khói', 'storage/menuItem-images/pizza/pizza_thit_xong_khoi.png', 'Thịt giăm bông, thịt xông khói và hai loại rau của ớt xanh, cà chua.', 149000, 4),
+('Pizza Xúc Xích Ý', 'storage/menuItem-images/pizza/pizza_xuc_xich_y.png', 'Xúc xích kiểu Ý trên nền sốt cà chua.', 139000, 4),
+('Pizza Thịt Nguội & Nấm', 'storage/menuItem-images/pizza/pizza_thit_nguoi_va_nam.png', 'Pizza giăm bông và nấm đem đến cho bạn những trải nghiệm thú vị.', 139000, 4),
+('Pizza Hawaiian', 'storage/menuItem-images/pizza/pizza_hawaiian.png', 'Giăm bông, thịt muối và dứa.', 139000, 4),
+('Pizza Rau Củ', 'storage/menuItem-images/pizza/pizza_rau_cu.png', 'Hành, ớt chuông, nấm, dứa, cà chua.', 119000, 4),
+('Pizza Hải Sản Cao Cấp', 'storage/menuItem-images/pizza/pizza_hai_san_cao_cap.png', 'Tôm, cua, mực và nghêu với sốt Marinara.', 159000, 4),
+('Pizza Đặc Biệt', 'storage/menuItem-images/pizza/pizza_dac_biet.png', 'Xúc xích bò, giăm bông, thịt xông khói và cả thế giới rau phong phú.', 149000, 4),
+('Pizza Gà Nướng', 'storage/menuItem-images/pizza/pizza_ga_nuong.png', 'Gà nướng, gà bơ tỏi và gà ướp sốt nấm.', 149000, 4),
 
 -- Mì Ý
-('Mì Ý Cay Hải Sản', 'mi_y_cay_hai_san.png', 'Mỳ Ý rán với các loại hải sản tươi ngon cùng ớt và tỏi.', 139000, 5),
-('Mì Ý chay sốt kem tươi', 'mi_y_chay_sot_kem_tươi.png', 'Mỳ Ý chay thơm ngon với sốt kem và nấm.', 109000, 5),
-('Mì Ý cay xúc xích', 'mi_y_cay_xuc_xich.png', 'Mỳ Ý rán với xúc xích cay, thảo mộc, ngò gai và húng quế Ý.', 119000, 5),
-('Mì Ý Giăm Bông', 'mi_y_giam_bong.png', 'Mỳ Ý, nấm và giăm bông được nấu cùng với sốt kem trắng.', 119000, 5),
-('Mì Ý Bò Bằm', 'mi_y_bo_bam.png', 'Sốt thịt bò bằm đặc trưng kết hợp cùng mỳ Ý.', 139000, 5),
-('Mì Ý sốt kem cà chua', 'mi_y_sot_kem_ca_tom.png', 'Sự tươi ngon của tôm kết hợp với sốt kem cà chua.', 139000, 5),
-('Mì Ý truyền thống', 'mi_y_truyen_thong.png', 'Mỳ Ý sốt cà chua truyền thống, hòa quyện với hương vị bơ.', 119000, 5),
+('Mì Ý Cay Hải Sản', 'storage/menuItem-images/mi-y/mi_y_cay_hai_san.png', 'Mỳ Ý rán với các loại hải sản tươi ngon cùng ớt và tỏi.', 139000, 5),
+('Mì Ý chay sốt kem tươi', 'storage/menuItem-images/mi-y/mi_y_chay_sot_kem_tươi.png', 'Mỳ Ý chay thơm ngon với sốt kem và nấm.', 109000, 5),
+('Mì Ý cay xúc xích', 'storage/menuItem-images/mi-y/mi_y_cay_xuc_xich.png', 'Mỳ Ý rán với xúc xích cay, thảo mộc, ngò gai và húng quế Ý.', 119000, 5),
+('Mì Ý Giăm Bông', 'storage/menuItem-images/mi-y/mi_y_giam_bong.png', 'Mỳ Ý, nấm và giăm bông được nấu cùng với sốt kem trắng.', 119000, 5),
+('Mì Ý Bò Bằm', 'storage/menuItem-images/mi-y/mi_y_bo_bam.png', 'Sốt thịt bò bằm đặc trưng kết hợp cùng mỳ Ý.', 139000, 5),
+('Mì Ý sốt kem cà chua', 'storage/menuItem-images/mi-y/mi_y_sot_kem_ca_tom.png', 'Sự tươi ngon của tôm kết hợp với sốt kem cà chua.', 139000, 5),
+('Mì Ý truyền thống', 'storage/menuItem-images/mi-y/mi_y_truyen_thong.png', 'Mỳ Ý sốt cà chua truyền thống, hòa quyện với hương vị bơ.', 119000, 5),
 
 -- Beefsteak
-('Beefsteak Bò Mỹ', 'beef_wellington.png', 'Bò mỹ được chế biến đặc biệt, tẩm gia vị hoàn hảo và nướng ở nhiệt độ thích hợp.', 279000, 6),
-('Beefsteak Bò Úc', 'beefsteak_so_tieu_den.png', 'Bò Úc chọn lọc được nướng lửa than, giữ được độ mềm ngọt.', 299000, 6),
-('Beefsteak Bò Kobe', 'ribeye_steak.png', 'Beefsteak bò Kobe thượng hạng, với độ mềm ngọt và hương vị độc đáo.', 399000, 6),
-('Beefsteak Chén Thơm', 'steak_frites.png', 'Beefsteak được nấu cùng với sốt tiêu đen, ăn kèm với khoai tây chiên.', 259000, 6),
-('Beefsteak Thăn Nội', 'sirloin_steak.png', 'Thăn nội bò Mỹ tươi ngon, nướng vừa đủ độ chín.', 319000, 6);
-
+('Beefsteak Bò Mỹ', 'storage/menuItem-images/beefsteak/beef_wellington.png', 'Bò mỹ được chế biến đặc biệt, tẩm gia vị hoàn hảo và nướng ở nhiệt độ thích hợp.', 279000, 6),
+('Beefsteak Bò Úc', 'storage/menuItem-images/beefsteak/beefsteak_bang.png', 'Bò Úc nướng trên than hồng, dậy hương thơm và đậm đà.', 289000, 6),
+('Beefsteak BBQ', 'storage/menuItem-images/beefsteak/beefsteak_bbq.png', 'Bò nướng BBQ với sốt cà chua và ngò tươi.', 299000, 6),
+('Beefsteak Phomai', 'storage/menuItem-images/beefsteak/beefsteak_phomai.png', 'Sự kết hợp hoàn hảo giữa bò và phô mai thơm ngon, béo ngậy.', 299000, 6),
+('Beefsteak Tiêu Đen', 'storage/menuItem-images/beefsteak/beefsteak_tieu_den.png', 'Bò nướng với sốt tiêu đen, thơm phức, béo ngậy.', 279000, 6),
+('Beefsteak Khoai Tây Nghiền', 'storage/menuItem-images/beefsteak/beefsteak_khoai_tay_nghien.png', 'Bò hảo hạng ăn kèm khoai tây nghiền, rất hấp dẫn.', 289000, 6);
