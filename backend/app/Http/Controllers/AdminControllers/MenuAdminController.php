@@ -51,43 +51,47 @@ class MenuAdminController extends MenuController
     }
 
     // Cập nhật menu
-    public function updateMenu(Request $request)
-    {
-        // Xác thực dữ liệu đầu vào
-        $request->validate([
-            'menuID' => 'required|integer',
-            'menuName' => 'required|string|max:255',
-            'menuImage' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'status' => 'required|in:display,hidden', // Xác thực trường status
-        ]);
+    public function updateMenu(Request $request, $id)
+{
+    // Tìm menu theo ID
+    $menu = Menu::findOrFail($id);
 
-        // Tìm menu theo ID
-        $id = $request->input('menuID');
-        $menu = Menu::findOrFail($id);
+    // Lưu giữ các trường cần cập nhật
+    $fieldsToUpdate = [];
 
-        // Kiểm tra nếu có file hình ảnh được tải lên
-        if ($request->hasFile('menuImage')) {
-            // Xóa hình ảnh cũ nếu có
-            if ($menu->menuImage) {
-                Storage::delete(str_replace('storage/', '', $menu->menuImage)); // Xóa hình ảnh cũ
-            }
-            // Lấy tên gốc của file
-            $originalExtension = $request->file('menuImage')->getClientOriginalExtension();
-            // Tạo tên hình ảnh với định dạng "menu_randomString.extension"
-            $randomString = uniqid();
-            $imageName = "menu_{$randomString}.{$originalExtension}"; 
-            $menuImagePath = $request->file('menuImage')->storeAs('menu-images', $imageName, 'public');
-            $menu->menuImage = 'storage/' . $menuImagePath; // Gán đường dẫn mới cho hình ảnh
+    // Xác thực và cập nhật từng trường nếu nó tồn tại trong request
+    if ($request->has('menuName')) {
+        $request->validate(['menuName' => 'string|max:255']);
+        $fieldsToUpdate['menuName'] = $request->input('menuName');
+    }
+
+    if ($request->has('status')) {
+        $request->validate(['status' => 'in:display,hidden']);
+        $fieldsToUpdate['status'] = $request->input('status');
+    }
+
+    // Kiểm tra và xử lý hình ảnh nếu có
+    if ($request->hasFile('menuImage')) {
+        // Xóa hình ảnh cũ nếu có
+        if ($menu->menuImage) {
+            Storage::delete(str_replace('storage/', '', $menu->menuImage)); // Xóa hình ảnh cũ
         }
 
-        // Cập nhật tên menu và trạng thái
-        $menu->menuName = $request->input('menuName');
-        $menu->status = $request->input('status'); // Cập nhật trạng thái
-        $menu->save();
-
-        // Trả về mã trạng thái 200 (OK)
-        return response()->noContent(200);
+        // Tạo tên hình ảnh mới
+        $originalExtension = $request->file('menuImage')->getClientOriginalExtension();
+        $randomString = uniqid();
+        $imageName = "menu_{$randomString}.{$originalExtension}";
+        $menuImagePath = $request->file('menuImage')->storeAs('menu-images', $imageName, 'public');
+        $fieldsToUpdate['menuImage'] = 'storage/' . $menuImagePath; // Gán đường dẫn mới cho hình ảnh
     }
+
+    // Cập nhật các trường có trong request
+    $menu->update($fieldsToUpdate);
+
+    // Trả về mã trạng thái 200 (OK) và dữ liệu menu đã cập nhật
+    return response()->json($menu, 200);
+}
+
 
     // Xóa menu
     public function destroyMenu($id)

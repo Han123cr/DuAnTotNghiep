@@ -39,24 +39,24 @@ Route::prefix('admin')->group(function(){
 
     Route::middleware((['auth.admin']))->group(function () {
         //Đăng xuất
-        Route::post('/logout', [LoginController::class , 'logout']);
+        Route::post('/logout', [LoginAdminController::class , 'logout']);
         //Lấy danh sách menu
         Route::get('/getMenus', action: [MenuAdminController::class , 'getMenus']);
         //Thêm menu mới
         Route::post('/storeMenu', action: [MenuAdminController::class , 'storeMenu']);
         //Sửa menu 
-        Route::post('/updateMenu', action: [MenuAdminController::class , 'updateMenu']);
+        Route::patch('/updateMenu/{id}', action: [MenuAdminController::class , 'updateMenu']);
         //Xóa menu 
-        Route::post('/destroyMenu', action: [MenuAdminController::class , 'destroyMenu']);
+        Route::delete('/destroyMenu/{id}', action: [MenuAdminController::class , 'destroyMenu']);
 
         //Lấy danh sách menuItem
         Route::get('/getMenuItems', [MenuItemAdminController::class , 'getMenuItems']);
         //Thêm sản phẩm
         Route::post('/storeMenuItem', [MenuItemAdminController::class , 'storeMenuItem']);
         //Sửa sản phẩm
-        Route::post('/updateMenuItem', [MenuItemAdminController::class , 'updateMenuItem']);
+        Route::patch('/updateMenuItem/{id}', [MenuItemAdminController::class , 'updateMenuItem']);
         //Xóa sản phẩm
-        Route::post('/destroyMenuItem', [MenuItemAdminController::class , 'destroyMenuItem']);
+        Route::delete('/destroyMenuItem/{id}', [MenuItemAdminController::class , 'destroyMenuItem']);
 
 
     });
