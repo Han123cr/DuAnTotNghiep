@@ -20,9 +20,4 @@ class Branch extends Model
     {
         return $this->hasMany(Table::class, 'branchID', 'branchID');
     }
-
-    public function reservations()
-    {
-        return $this->hasMany(Reservation::class, 'branchID', 'branchID');
-    }
 }

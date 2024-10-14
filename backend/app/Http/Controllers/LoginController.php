@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
-    public function authenticationLogin(Request $request)
+    public function login(Request $request)
 {
     // Xác thực dữ liệu đầu vào
     $request->validate([
@@ -26,27 +26,27 @@ class LoginController extends Controller
     // Kiểm tra xem đầu vào là email hay số điện thoại
     if (filter_var($email_or_phone, FILTER_VALIDATE_EMAIL)) {
         // Nếu là email, tìm người dùng theo email
-        $user = Customer::where('email', $email_or_phone)->first();
+        $customer = Customer::where('email', $email_or_phone)->first();
     } else {
         // Nếu là số điện thoại, tìm người dùng theo số điện thoại
-        $user = Customer::where('phoneNumber', $email_or_phone)->first();
+        $customer = Customer::where('phoneNumber', $email_or_phone)->first();
     }
 
     // Kiểm tra nếu người dùng không tồn tại
-    if (!$user) {
+    if (!$customer) {
         return response()->json(['message' => 'Người dùng không tồn tại.'], 404);
     }
 
     // Kiểm tra trạng thái người dùng
-    if ($user->status == 'blocked') {
+    if ($customer->status == 'blocked') {
         return response()->json(['message' => 'Tài khoản của bạn đã bị khóa.'], 403); // 403: Forbidden
     }
 
 
     // Kiểm tra mật khẩu bằng Hash::check()
-    if (Hash::check($password, $user->password)) {
+    if (Hash::check($password, $customer->password)) {
         // Đăng nhập thành công
-        Auth::login($user);
+        Auth::guard('customer')->login($customer);
         return response()->json(['message' => 'Đăng nhập thành công!'], 200);
     }
 
@@ -54,6 +54,7 @@ class LoginController extends Controller
     return response()->json(['message' => 'Số điện thoại hoặc mật khẩu không chính xác.'], 401);
 }
 
+    //Quên mật khẩu
     public function forgotPassword(Request $request)
     {
         // Xác thực dữ liệu đầu vào
@@ -65,9 +66,9 @@ class LoginController extends Controller
 
         // Kiểm tra xem đầu vào là email hay số điện thoại
         if (filter_var($email_or_phone, FILTER_VALIDATE_EMAIL)) {
-            $user = Customer::where('email', $email_or_phone)->first();
+            $user = Customer::where('email', $email_or_phone);
         } else {
-            $user = Customer::where('phoneNumber', $email_or_phone)->first();
+            $user = Customer::where('phoneNumber', $email_or_phone);
         }
 
         if (!$user) {
@@ -75,7 +76,7 @@ class LoginController extends Controller
         }
 
         // Tạo mã xác nhận ngẫu nhiên
-        $verificationCode = rand(100000, 999999); // Tạo mã số ngẫu nhiên
+        $verificationCode = random_int(100000, 999999); // Tạo mã số ngẫu nhiên
 
         // Lưu mã xác nhận vào session
         session(['verification_code' => $verificationCode, 'customer_id' => $user->customerID]);
@@ -91,24 +92,7 @@ class LoginController extends Controller
         }
     }
 
-    // Hàm gửi SMS (giả sử sử dụng Twilio, bạn có thể điều chỉnh theo dịch vụ SMS bạn chọn)
-    protected function sendSms($phoneNumber, $verificationCode)
-    {
-        // Giả sử bạn sử dụng Twilio, thêm mã để gửi tin nhắn
-        $sid = 'TWILIO_SID';  // Lấy từ tài khoản Twilio
-        $token = 'TWILIO_AUTH_TOKEN';  // Lấy từ tài khoản Twilio
-        $twilioNumber = 'TWILIO_PHONE_NUMBER';  // Số điện thoại Twilio của bạn
-
-        $client = new \Twilio\Rest\Client($sid, $token);
-        $client->messages->create(
-            $phoneNumber,
-            [
-                'from' => $twilioNumber,
-                'body' => 'Mã xác nhận của bạn là: ' . $verificationCode,
-            ]
-        );
-    }
-
+    //Mã xác nhận
     public function verifyResetCode(Request $request)
     {
         $request->validate([
@@ -124,6 +108,7 @@ class LoginController extends Controller
         return response()->json(['message' => 'Mã xác nhận không chính xác.'], 422);
     }
 
+    //Mật khẩu mới
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -147,10 +132,11 @@ class LoginController extends Controller
         return response()->json(['message' => 'Mật khẩu đã được cập nhật thành công.'], 200);
     }
 
+    //Đăng xuất
     public function logout()
     {
         try {
-            Auth::logout();
+            Auth::guard('customer')->logout();
             return response()->json(['message' => 'Đăng xuất thành công!'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Đã xảy ra lỗi trong quá trình đăng xuất.'], 500);

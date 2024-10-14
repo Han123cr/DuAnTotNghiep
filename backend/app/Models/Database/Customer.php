@@ -21,8 +21,8 @@ class Customer extends Model implements AuthenticatableContract
         'email', 
         'phoneNumber', 
         'password', 
-        'status', 
-        'role'
+        'status',
+        'createdAt'
     ];
 
     // Các trường không nên được trả về khi query
@@ -30,13 +30,39 @@ class Customer extends Model implements AuthenticatableContract
         'password',
     ];
 
+    protected $casts = [
+        'createdAt' => 'datetime',
+    ];
+
     // Định nghĩa mối quan hệ 1-nhiều với bảng addresses
     public function addresses()
     {
         return $this->hasMany(Address::class, 'customerID', 'customerID');
     }
-    public function reservations()
+
+    public function carts()
     {
-        return $this->hasMany(Reservation::class, 'customerID', 'customerID');
+        return $this->hasMany(Cart::class, 'customerID', 'customerID');
+    }
+
+    public function customerUseVouchers()
+    {
+        return $this->hasMany(CustomerUseVoucher::class, 'customerID', 'customerID');
+    }
+
+    public function favoriteFoods()
+    {
+        return $this->hasMany(FavoriteFood::class, 'customerID', 'customerID');
+    }
+
+    public function serviceReviews()
+    {
+        return $this->hasMany(ServiceReview::class, 'customerID', 'customerID');
     }
 }
+
+
+
+
+
+

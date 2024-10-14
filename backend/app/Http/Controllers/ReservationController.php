@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
-use App\Models\Database\Reservation;
+use App\Models\Database\TableOrder;
 use App\Models\Database\Table;
 use App\Models\Database\Branch;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Illuminate\Support\Facades\Log;
@@ -23,10 +23,10 @@ class ReservationController extends Controller
    public function getUserReservations(Request $request)
    {
        // Lấy ID người dùng hiện tại từ Auth
-       $currentCustomerId = Auth::id();
+       $currentCustomerId = Auth::guard('customer')->id();
 
        // Lấy danh sách đặt chỗ của người dùng hiện tại và thông tin chi nhánh liên quan
-       $reservations = Reservation::where('customerID', $currentCustomerId)
+       $reservations = TableOrder::where('customerID', $currentCustomerId)
            ->with('branch') // Thêm quan hệ để lấy thông tin chi nhánh
            ->get();
 
@@ -68,7 +68,7 @@ class ReservationController extends Controller
     $reservationId = $request->input('reservationId');
 
     // Tìm đặt chỗ theo reservationId
-    $reservation = Reservation::find($reservationId);
+    $reservation = TableOrder::find($reservationId);
 
     if (!$reservation) {
         return response()->json([
@@ -77,7 +77,7 @@ class ReservationController extends Controller
     }
 
     // Lấy ID người dùng hiện tại (customerID từ Auth)
-    $currentCustomerId = Auth::id();
+    $currentCustomerId = Auth::guard('customer')->id();
 
     // Kiểm tra xem đặt chỗ có thuộc về người dùng hiện tại không
     if ($reservation->customerID != $currentCustomerId) {
@@ -102,8 +102,6 @@ class ReservationController extends Controller
 
 
     // Lấy bàn trống và đặt chỗ
- 
-
     public function getAvailableTables()
     {
         // Lấy danh sách các chi nhánh
@@ -120,7 +118,7 @@ class ReservationController extends Controller
     
             foreach ($tables as $table) {
                 // Lấy danh sách các thời gian đặt bàn cho bàn này
-                $reservations = Reservation::where('tableID', $table->tableID)->get();
+                $reservations = TableOrder::where('tableID', $table->tableID)->get();
                 $arrivalTimes = [];
     
                 foreach ($reservations as $reservation) {
@@ -209,7 +207,7 @@ class ReservationController extends Controller
     // Kiểm tra trạng thái bàn và các đặt chỗ đã có
     if ($table->tableStatus === 'wait') {
         // Lấy danh sách các đặt chỗ hiện có cho bàn này
-        $reservations = Reservation::where('tableID', $tableID)->get();
+        $reservations = TableOrder::where('tableID', $tableID)->get();
         $currentArrivalTime = \Carbon\Carbon::parse($arrivalTime);
         $isInWaitTime = false;
 
@@ -268,7 +266,7 @@ class ReservationController extends Controller
         if ($request->resultCode == 0) {
             $reservationData = Session::get('reservation');
             if ($reservationData) {
-                $reservation = Reservation::create([
+                $reservation = TableOrder::create([
                     'createdAt' => now(),
                     'arrivalTime' => $reservationData['arrivalTime'],
                     'numberOfPeople' => $reservationData['numberOfPeople'],
@@ -280,7 +278,7 @@ class ReservationController extends Controller
                     'deposit' => $request->amount,
                     'paymentMethod' => 'MoMo',
                     'transactionID' => $request->transId,
-                    'customerID' => Auth::id(),
+                    'customerID' => Auth::guard('customer')->id(),
                     'branchID' => $reservationData['branchID'],
                     'tableID' => $reservationData['tableID'],
                 ]);

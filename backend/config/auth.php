@@ -36,40 +36,39 @@ return [
     */
 
     'guards' => [
-        'web' => [
+        'admin' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'admins',
+        ],
+    
+        'customer' => [
+            'driver' => 'session',
+            'provider' => 'customers',
+        ],
+    
+        'staff' => [
+            'driver' => 'session',
+            'provider' => 'staffs', // Thêm guard cho staff
         ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | User Providers
-    |--------------------------------------------------------------------------
-    |
-    | All authentication guards have a user provider, which defines how the
-    | users are actually retrieved out of your database or other storage
-    | system used by the application. Typically, Eloquent is utilized.
-    |
-    | If you have multiple user tables or models you may configure multiple
-    | providers to represent the model / table. These providers may then
-    | be assigned to any extra authentication guards you have defined.
-    |
-    | Supported: "database", "eloquent"
-    |
-    */
-
+    
     'providers' => [
-        'users' => [
+        'admins' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\Database\Customer::class),
+            'model' => App\Models\Database\Admin::class, // Đường dẫn đến model Admin
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+    
+        'customers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Database\Customer::class, // Đường dẫn đến model Customer
+        ],
+    
+        'staffs' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Database\Staff::class, // Đường dẫn đến model Staff
+        ],
     ],
+    
 
     /*
     |--------------------------------------------------------------------------

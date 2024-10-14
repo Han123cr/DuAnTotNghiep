@@ -41,11 +41,10 @@ class CustomerController extends Controller
     //     return response()->json(['message' => 'Người dùng đã được tạo thành công!'], 201);
     // }
 
-    public function show()
+    public function showInfo()
     {
         // Lấy thông tin khách hàng hiện tại từ phiên (session)
-        $customer = Auth::user();
-
+        $customer = Auth::guard('customer')->user(); 
         // Kiểm tra nếu có khách hàng đăng nhập
         if ($customer) {
             // Chuẩn bị dữ liệu công khai để trả về
@@ -70,8 +69,8 @@ class CustomerController extends Controller
     $request->validate([
         'name' => 'nullable|string|max:255',
         'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'email' => 'nullable|email|unique:customers,email,' . Auth::id(), // Kiểm tra tính duy nhất của email
-        'phoneNumber' => 'nullable|numeric|digits:10|unique:customers,phoneNumber,' . Auth::id(), // Kiểm tra tính duy nhất của số điện thoại
+        'email' => 'nullable|email|unique:customers,email,' .  Auth::guard('customer')->id(), // Kiểm tra tính duy nhất của email
+        'phoneNumber' => 'nullable|numeric|digits:10|unique:customers,phoneNumber,' .  Auth::guard('customer')->id(), // Kiểm tra tính duy nhất của số điện thoại
         'old_password' => 'nullable|string|min:6', // Trường xác nhận mật khẩu cũ
         'password' => 'nullable|string|min:6|confirmed',
         'addresses' => 'nullable|array', // Địa chỉ là một mảng
@@ -86,7 +85,7 @@ class CustomerController extends Controller
     }
 
     // Lấy người dùng hiện tại từ phiên
-    $customer = Auth::user();
+    $customer = Auth::guard('customer')->user();
 
     // Duyệt qua từng trường
     foreach ($request->all() as $key => $value) {
@@ -193,7 +192,7 @@ class CustomerController extends Controller
             // Lấy thông tin email hoặc số điện thoại từ session
             $email = session('email');
             $phoneNumber = session('phoneNumber');
-            $customer = Auth::user();
+            $customer = Auth::guard('customer')->user();
 
             // Cập nhật email hoặc số điện thoại vào database nếu có
             if ($email && $email !== $customer->email) {
@@ -222,11 +221,11 @@ class CustomerController extends Controller
 
 
 
-
+    //xóa tài khoản nguời dùng
     public function destroy()
     {
         // Lấy người dùng hiện tại từ phiên
-        $customer = Auth::user();
+        $customer = Auth::guard('customer')->user();
 
         $customer->delete();
         return response()->json(['message' => 'Người dùng đã bị xóa.'], 200);
