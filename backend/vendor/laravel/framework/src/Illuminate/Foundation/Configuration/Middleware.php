@@ -444,6 +444,8 @@ class Middleware
                 \Illuminate\Session\Middleware\StartSession::class,
                 \Illuminate\View\Middleware\ShareErrorsFromSession::class,
                 // \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+                \Fruitcake\Cors\HandleCors::class,
+                // \App\Http\Middleware\YourCustomMiddleware::class,
                 \Illuminate\Routing\Middleware\SubstituteBindings::class,
                 $this->authenticatedSessions ? 'auth.session' : null,
             ])),
