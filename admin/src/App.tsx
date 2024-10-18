@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 
 
 import Home from './Pages/Home'
-import Header from './Pages/Header'
 import Footer from './Pages/Footer'
 import ProductPage from './Pages/ProductPage'
 import ProductPagetest from './Pages/ProductPagetest'
@@ -12,7 +11,6 @@ function App() {
   return (
     <>
       <Router>
-        <Header />
         <Routes>
           <Route path='/' element={<Navigate to ='/admin' />} />
           <Route path='/admin' element={<Home />} />
