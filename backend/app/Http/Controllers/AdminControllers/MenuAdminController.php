@@ -10,7 +10,7 @@ use App\Models\Database\Menu;
 class MenuAdminController extends MenuController
 {
     // Thêm menu mới
-    public function storeMenu(Request $request)
+    public function createMenu(Request $request)
     {
         // Xác thực dữ liệu đầu vào
         $request->validate([
@@ -94,7 +94,7 @@ class MenuAdminController extends MenuController
 
 
     // Xóa menu
-    public function destroyMenu($id)
+    public function deleteMenu($id)
     {
         // Tìm menu theo ID
         $menu = Menu::findOrFail($id);

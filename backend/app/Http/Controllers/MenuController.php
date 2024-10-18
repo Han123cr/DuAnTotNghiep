@@ -54,4 +54,16 @@ class MenuController extends Controller
 
         return response()->json($result); // Trả về dữ liệu dưới dạng JSON
     }
+
+    // Hàm lấy chi tiết món ăn
+    public function getMenuItemDetails($id)
+    {
+        $menuItem = MenuItem::find($id); // Tìm món ăn theo ID
+
+        if (!$menuItem) {
+            return response()->json(['message' => 'Menu item not found'], 404); // Trả về lỗi 404 nếu không tìm thấy
+        }
+
+        return response()->json($menuItem); // Trả về dữ liệu món ăn dưới dạng JSON
+    }
 }

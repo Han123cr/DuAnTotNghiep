@@ -148,6 +148,14 @@ CREATE TABLE tableOrders (
     FOREIGN KEY (paymentMethodID) REFERENCES paymentMethods(paymentMethodID) ON DELETE SET NULL
 );
 
+-- Bảng đặt bàn (tableOrders)
+CREATE TABLE selectedDishs (
+    tableOrderID INT,                                     -- Khóa ngoại tới đặt bàn
+    menuItemID INT,                                   -- Khóa ngoại tới bảng menuItems
+    FOREIGN KEY (menuItemID) REFERENCES menuItems(menuItemID) ON DELETE CASCADE,
+    FOREIGN KEY (tableOrderID) REFERENCES tableOrders(tableOrderID) ON DELETE CASCADE
+);
+
 -- Bảng hóa đơn đặt bàn (tableBills)
 CREATE TABLE tableBills (
     tableBillID INT AUTO_INCREMENT PRIMARY KEY,           -- ID hóa đơn
@@ -175,8 +183,6 @@ CREATE TABLE tableBillDetails (
     FOREIGN KEY (tableBillID) REFERENCES tableBills(tableBillID) ON DELETE CASCADE,
     FOREIGN KEY (menuItemID) REFERENCES menuItems(menuItemID) ON DELETE CASCADE
 );
-
-
 
 -- Bảng giỏ hàng (carts)
 CREATE TABLE carts (
@@ -367,3 +373,28 @@ INSERT INTO menuItems (itemName, itemImage, description, price, menuID) VALUES
 ('Beefsteak Phomai', 'storage/menuItem-images/beefsteak/beefsteak_phomai.png', 'Sự kết hợp hoàn hảo giữa bò và phô mai thơm ngon, béo ngậy.', 299000, 6),
 ('Beefsteak Tiêu Đen', 'storage/menuItem-images/beefsteak/beefsteak_tieu_den.png', 'Bò nướng với sốt tiêu đen, thơm phức, béo ngậy.', 279000, 6),
 ('Beefsteak Khoai Tây Nghiền', 'storage/menuItem-images/beefsteak/beefsteak_khoai_tay_nghien.png', 'Bò hảo hạng ăn kèm khoai tây nghiền, rất hấp dẫn.', 289000, 6);
+
+
+-- Insert dữ liệu vào bảng paymentMethods
+INSERT INTO paymentMethods (methodName) VALUES 
+('Tiền mặt'), 
+('Ví điện tử VNPAY'), 
+('Ví điện tử Momo');
+
+
+-- Insert dữ liệu vào bảng customers
+INSERT INTO customers (createdAt, name, avatar, email, phoneNumber, password, status) VALUES 
+('2024-10-13 12:30:00', 'Nguyễn Văn A', 'avatar_a.png', 'trung1@gmail.com', '0901234567', '$2y$12$ekEMQRg3htHMw0QiB5j6Ue.0H0AN4fwGiVlQx0Qndwj52wpe7Z1R6', 'active'),
+('2024-10-13 12:30:00', 'Trần Thị B', 'avatar_b.png', 'trung2@gmail.com', '0907654321', '$2y$12$ekEMQRg3htHMw0QiB5j6Ue.0H0AN4fwGiVlQx0Qndwj52wpe7Z1R6', 'active'),
+('2024-10-13 12:30:00', 'Lê Văn C', 'avatar_c.png', 'trung3@gmail.com', '0912345678', '$2y$12$ekEMQRg3htHMw0QiB5j6Ue.0H0AN4fwGiVlQx0Qndwj52wpe7Z1R6', 'active'),
+('2024-10-13 12:30:00', 'Phạm Thị D', 'avatar_d.png', 'trung4@gmail.com', '0919876543', '$2y$12$ekEMQRg3htHMw0QiB5j6Ue.0H0AN4fwGiVlQx0Qndwj52wpe7Z1R6', 'active'),
+('2024-10-13 12:30:00', 'Ngô Văn E', 'avatar_e.png', 'trung5@gmail.com', '0923456789', '$2y$12$ekEMQRg3htHMw0QiB5j6Ue.0H0AN4fwGiVlQx0Qndwj52wpe7Z1R6', 'active');
+
+
+-- Insert dữ liệu vào bảng tableOrders
+INSERT INTO tableOrders (createdAt, arrivalTime, numberOfPeople, notes, bookerName, bookerPhoneNumber, tableOrderStatus, deposit, transactionCode, customerID, tableID, paymentMethodID)
+VALUES 
+('2024-10-13 12:30:00', '2024-10-14 18:00:00', 4, 'Yêu cầu không hút thuốc', 'Nguyễn Văn A', '0912345678', 'confirmed', 500000.00, 'TX123456', 1, 1, 2),
+('2024-10-12 09:15:00', '2024-10-15 20:00:00', 2, 'Góc ngồi cạnh cửa sổ', 'Trần Thị B', '0934567890', 'pending', 200000.00, 'TX654321', 2, 2, 2),
+('2024-10-11 14:45:00', '2024-10-16 12:30:00', 6, 'Bàn lớn cho gia đình', 'Lê Văn C', '0909876543', 'cancelled', 0.00, '', 3, 3, 3),
+('2024-10-10 10:00:00', '2024-10-18 19:00:00', 3, NULL, 'Phạm Thị D', '0911122233', 'completed', 300000.00, 'TX111222', 4, 4, 3);

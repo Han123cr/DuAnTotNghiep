@@ -28,7 +28,7 @@ class MenuItemAdminController extends MenuController
     }
 
     // Thêm sản phẩm
-    public function storeMenuItem(Request $request)
+    public function createMenuItem(Request $request)
     {
         $request->validate($this->menuItemValidationRules());
 
@@ -114,12 +114,12 @@ class MenuItemAdminController extends MenuController
     // Lưu thay đổi
     $menuItem->save();
 
-    return response()->noContent(200); // Trả về mã trạng thái 200 (OK)
+    return response()->json($menuItem, 200);// Trả về mã trạng thái 200 (OK)
 }
 
 
     // Xóa sản phẩm
-    public function destroyMenuItem($id)
+    public function deleteMenuItem($id)
     {
         $menuItem = MenuItem::findOrFail($id);
 

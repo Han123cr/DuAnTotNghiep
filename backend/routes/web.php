@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminControllers\LoginAdminController;
 use App\Http\Controllers\AdminControllers\MenuAdminController;
 use App\Http\Controllers\AdminControllers\MenuItemAdminController;
+use App\Http\Controllers\AdminControllers\TableOrderAdminController;
 // use App\Http\Controllers\ControllerHome;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
@@ -14,27 +15,23 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\MenuController;
 
+
+
 Route::get('/session', [SessionController::class, 'showForm'])->name('session.form');
 Route::post('/session', [SessionController::class, 'storeData'])->name('session.store');
-
-Route::get('/t', [RegisterController::class , 'test']);
-Route::post('/dangky', [RegisterController::class , 'register']);
-Route::get('/nhapmaxacthuc', [RegisterController::class , 'nhapmaxacthuc']);
-Route::post('/nhapmaxacthuc', [RegisterController::class , 'verifyAndCheckCode']);
-
-
-Route::get('/dangnhap', [LoginController::class , 'dangnhap']);
-Route::post('/dangnhap', [LoginController::class , 'authenticationLogin']);
+ 
 
 
 
 
-
-
+Route::prefix('api')->group(function(){
 
 Route::prefix('admin')->group(function(){
     //Đăng nhập
     Route::post('/login', [LoginAdminController::class , 'login']);
+
+    
+    
 
 
     Route::middleware((['auth.admin']))->group(function () {
@@ -43,21 +40,27 @@ Route::prefix('admin')->group(function(){
         //Lấy danh sách menu
         Route::get('/getMenus', action: [MenuAdminController::class , 'getMenus']);
         //Thêm menu mới
-        Route::post('/storeMenu', action: [MenuAdminController::class , 'storeMenu']);
+        Route::post('/createMenu', action: [MenuAdminController::class , 'createMenu']);
         //Sửa menu 
         Route::patch('/updateMenu/{id}', action: [MenuAdminController::class , 'updateMenu']);
         //Xóa menu 
-        Route::delete('/destroyMenu/{id}', action: [MenuAdminController::class , 'destroyMenu']);
+        Route::delete('/deleteMenu/{id}', action: [MenuAdminController::class , 'deleteMenu']);
 
         //Lấy danh sách menuItem
         Route::get('/getMenuItems', [MenuItemAdminController::class , 'getMenuItems']);
         //Thêm sản phẩm
-        Route::post('/storeMenuItem', [MenuItemAdminController::class , 'storeMenuItem']);
+        Route::post('/createMenuItem', [MenuItemAdminController::class , 'createMenuItem']);
         //Sửa sản phẩm
         Route::patch('/updateMenuItem/{id}', [MenuItemAdminController::class , 'updateMenuItem']);
         //Xóa sản phẩm
-        Route::delete('/destroyMenuItem/{id}', [MenuItemAdminController::class , 'destroyMenuItem']);
+        Route::delete('/deleteMenuItem/{id}', [MenuItemAdminController::class , 'deleteMenuItem']);
 
+        //Đơn đặt bàn
+        Route::get('/getTableOrders', [TableOrderAdminController::class , 'getTableOrders']);
+        Route::post('/createTableOrder', [TableOrderAdminController::class , 'createTableOrder']);
+        Route::patch('/updateTableOrder/{id}', [TableOrderAdminController::class , 'updateTableOrder']);
+        
+        
 
     });
 });
@@ -92,6 +95,7 @@ Route::prefix('/')->group(function(){
     Route::get('/getMenus', [MenuController::class , 'getMenus']);
     Route::get('/getMenuItems', [MenuController::class , 'getMenuItems']);
     Route::get('/getMenusWithItems', [MenuController::class , 'getMenusWithItems']);
+    Route::get('/getMenuItemDetails/{id}', [MenuController::class , 'getMenuItemDetails']);
     
     //Lấy thời gian và bàn trống
     Route::get('/getAvailableTables', [ReservationController::class , 'getAvailableTables']);
@@ -108,7 +112,8 @@ Route::prefix('/')->group(function(){
         //Chỉnh sửa thông tin
         Route::post('/edit', [CustomerController::class , 'datban']);
         Route::post('/xacthuc', [CustomerController::class , 'verifyAndCheckCode']);
-        Route::post('/xoataikhoan', [CustomerController::class , 'destroy']);
+        Route::post('/xoataikhoan', [CustomerController::class , 'delete']);
 
     });
+});
 });
