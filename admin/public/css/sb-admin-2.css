@@ -1524,6 +1524,7 @@ pre code {
 .table-bordered thead th,
 .table-bordered thead td {
   border-bottom-width: 2px;
+  color: #52575C;
 }
 
 .table-borderless th,
@@ -10553,6 +10554,7 @@ a:focus {
 @media (min-width: 768px) {
   .sidebar {
     width: 14rem !important;
+    font-weight: bolder;
   }
   .sidebar .nav-item .collapse {
     position: relative;

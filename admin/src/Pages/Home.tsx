@@ -26,7 +26,7 @@ const Home = () => {
                 <ul className="app-breadcrumb breadcrumb">
                   <li className="breadcrumb-item">
                     <a href="#">
-                      <b>Bảng điều khiển</b>
+                      <b>Thống kê báo cáo</b>
                     </a>
                   </li>
                 </ul>

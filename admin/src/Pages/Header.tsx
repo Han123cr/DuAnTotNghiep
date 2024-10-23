@@ -1,4 +1,6 @@
+import { Avatar } from '@mui/material'
 import { Link } from 'react-router-dom'
+import NotificationsIcon from '@mui/icons-material/Notifications';
 export const HeaderUl = () => {
   return (
     <>
@@ -30,10 +32,10 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Sản phẩm</div>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <a className="nav-link" href="#">
+          <Link to="/category" className="nav-link">
             <i className="fas fa-fw fa-cog" />
             <span>Quản lý thực đơn</span>
-          </a>
+          </Link>
         </li>
         {/* Nav Item - Utilities Collapse Menu */}
         <li className="nav-item">
@@ -211,7 +213,7 @@ export const HeaderNav = () => {
               aria-haspopup="true"
               aria-expanded="false"
             >
-              <i className="fas fa-bell fa-fw" />
+              <NotificationsIcon sx={{fontSize: 28}} />
               {/* Counter - Alerts */}
               <span className="badge badge-danger badge-counter">3+</span>
             </a>
@@ -277,10 +279,11 @@ export const HeaderNav = () => {
               aria-haspopup="true"
               aria-expanded="false"
             >
-              <img
+              {/* <img
                 className="img-profile rounded-circle"
                 src="img/images.jfif"
-              />
+              /> */}
+              <Avatar sx={{ width: 35, height: 35 }} src="/broken-image.jpg" />
             </a>
             {/* Dropdown - User Information */}
             <div

@@ -1,10 +1,9 @@
 import { HeaderNav, HeaderUl } from "./Header";
 import Clock from "../Components/Clock"
-import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
-import ProductTable from "../Components/ProductTable";
+import ProductTable from "../Components/Product/ProductTable";
+import AddProduct from "../Components/Product/AddProduct";
 
-const ProductPagetest = () => {
+const CategoryPage = () => {
     return (
         <>
             <div id="page-top">
@@ -26,7 +25,7 @@ const ProductPagetest = () => {
                                     <ul className="app-breadcrumb breadcrumb">
                                         <li className="breadcrumb-item">
                                             <a href="#">
-                                                <b>Bảng điều khiển</b>
+                                                <b>Quản lý thực đơn</b>
                                             </a>
                                         </li>
                                     </ul>
@@ -38,11 +37,7 @@ const ProductPagetest = () => {
                                                 <div className="tile">
                                                     <div className="tile-body">
                                                         <div className="row element-button">
-                                                            <div className="col-sm-3">
-                                                            <Button startIcon={<AddIcon/>} variant="contained" disableElevation sx={{marginBottom: '10px'}}>
-                                                                Thêm sản phẩm
-                                                            </Button>
-                                                            </div>
+                                                            <AddProduct />
                                                         </div>
                                                         <ProductTable/>
                                                     </div>
@@ -67,4 +62,4 @@ const ProductPagetest = () => {
     )
 }
 
-export default ProductPagetest
+export default CategoryPage

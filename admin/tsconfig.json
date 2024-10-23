@@ -1,4 +1,6 @@
 {
+  "API_Url": "https://savory.website/api/admin",
+  "API_UrlImage": "https://savory.website/img",
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Home from './Pages/Home'
 import Footer from './Pages/Footer'
 import ProductPage from './Pages/ProductPage'
-import ProductPagetest from './Pages/ProductPagetest'
+import CategoryPage from './Pages/CategoryPage'
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
           <Route path='/' element={<Navigate to ='/admin' />} />
           <Route path='/admin' element={<Home />} />
           <Route path='/product' element={<ProductPage />} />
-          <Route path='/producttest' element={<ProductPagetest />} />
+          <Route path='/category' element={<CategoryPage />} />
         </Routes>
         <Footer />
       </Router>
