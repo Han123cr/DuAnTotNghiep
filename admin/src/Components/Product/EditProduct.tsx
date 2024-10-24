@@ -111,6 +111,11 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                     setselectedMenu(product.menuID);
                     setFile(null)
 
+                    const imageName = product.itemImage 
+                    ? product.itemImage.split('/').pop() // Only split if itemImage is a valid string
+                    : '';
+
+                    setFileName(imageName || '');
                     
                     setImageSrc(`${API_UrlImage}/${product.itemImage}`)
                 }
@@ -180,16 +185,13 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
 
     const handleSubmit = async () => {
 
-        console.log(itemName,file,description,price,discount,selectedSize,selectedMenu,status,statusToday);
-        
-
         const formData = new FormData();
         formData.append('itemName', itemName);
         if (file) formData.append('itemImage', file);
         formData.append('description', description);
         formData.append('price', price.toString());
         formData.append('discount', discount.toString());
-        formData.append('size', selectedSize);
+        formData.append('size', selectedSize ? selectedSize : '');
         formData.append('status', status);
         formData.append('statusToday', statusToday);
         if (selectedMenu !== undefined) {
@@ -404,7 +406,7 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
             </React.Fragment>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
                 <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
-                    Thêm sản phẩm thành công !
+                    Cập nhật sản phẩm thành công !
                 </Alert>
             </Snackbar>
         </>

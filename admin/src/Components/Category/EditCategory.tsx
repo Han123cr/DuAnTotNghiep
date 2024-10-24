@@ -7,12 +7,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import AddIcon from '@mui/icons-material/Add';
+// import AddIcon from '@mui/icons-material/Add';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
-import { useState } from 'react';
-import { API_Url } from "../../../tsconfig.json"
+import { useState, useEffect } from 'react';
+import { API_Url, API_UrlImage } from "../../../tsconfig.json"
 
 interface Menu {
     menuID: number,
@@ -21,9 +21,11 @@ interface Menu {
     status: string,
 }
 
-interface AddCategoryProps {
-    onAddCategory: (newCategory: Menu) => void;
+interface EditCategoryProps {
+    categoryID: number;
+    onEditCategory: (updateCategory: Menu) => void;
 }
+
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialogContent-root': {
@@ -34,7 +36,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
+const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory }) => {
 
     const [openAlert, setOpenAlert] = useState(false)
     const [open, setOpen] = React.useState(false);
@@ -44,13 +46,33 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
     const [menuName, setMenuName] = useState('');
     const [file, setFile] = useState<File | null>(null);
 
-    const resetForm = () => {
-        setFileName('');
-        setImageSrc('');
-        setStatus('');
-        setMenuName('');
-        setFile(null);
-    };
+    useEffect(() => {
+        const fetchCategoryDetails = async () => {
+            try{
+                const response = await fetch(`${API_Url}/getMenuDetails/${categoryID}`);
+                const category: Menu = await response.json();
+                if(category){
+                    setMenuName(category.menuName);
+                    setStatus(category.status); 
+                    setFile(null)
+
+                    const imageName = category.menuImage 
+                    ? category.menuImage.split('/').pop() // Only split if menuImage is a valid string
+                    : '';
+
+                    setFileName(imageName || '');
+                    
+                    setImageSrc(`${API_UrlImage}/${category.menuImage}`)
+                }
+            }catch(err){
+                console.error(err);
+            }
+        };
+
+        if(open){
+            fetchCategoryDetails();
+        };
+    }, [open, categoryID]);
 
     //Khi upload ảnh thì sẽ hiện tên file ảnh và hiện ảnh
     const handFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,6 +100,7 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
     };
     const handleClose = () => {
         setOpen(false);
+        // resetForm();
     };
 
     //Đóng mở alert
@@ -93,36 +116,34 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
     }
 
     const handleSubmit = async () => {
+
         const formData = new FormData();
         formData.append('menuName', menuName);
         if (file) formData.append('menuImage', file);
         formData.append('status', status);
 
+        console.log(menuName, fileName, status);
+
         try {
-            const response = await fetch(`${API_Url}/createMenu`, {
+            const response = await fetch(`${API_Url}/updateMenu/${categoryID}`, {
                 method: 'POST',
                 body: formData,
             });
 
 
             if (!response.ok) {
-                throw new Error('Thất bại khi thêm danh mục');
+                throw new Error('Thất bại khi sửa danh mục');
             }
 
-            //Dùng callback load danh mục không cần reload trang
-
-            const newCategory = await response.json();
-
-            // const newCategory = result.data;
-            
-            onAddCategory(newCategory)
-            resetForm();
+            const updateCategory = await response.json();
+            onEditCategory(updateCategory);
+            // resetForm();
             //Show thông báo thêm danh mục thành công
             setOpenAlert(true)
 
         } catch (error) {
             console.error(error);
-            alert('Thêm danh mục thất bại')
+            alert('Sửa danh mục thất bại')
         }
 
         //Đóng form sau khi thêm danh mục
@@ -131,11 +152,14 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
 
     return (
         <>
-            <div className="col-sm-3">
-                <Button startIcon={<AddIcon />} variant="contained" disableElevation sx={{ marginBottom: '10px' }} onClick={handleClickOpen}>
-                    Thêm danh mục
-                </Button>
-            </div>
+            <button
+                className="btn btn-primary btn-sm edit"
+                type="button"
+                title="Sửa"
+                onClick={handleClickOpen}
+            >
+                <i className="fas fa-edit" />
+            </button>
 
 
             <React.Fragment>
@@ -145,7 +169,7 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
                     open={open}
                 >
                     <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-                        Thêm danh mục
+                        Sửa danh mục
                     </DialogTitle>
                     <IconButton
                         aria-label="close"
@@ -172,8 +196,8 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
                                 />
                             </div>
 
-                            <div style={{ marginTop: '15px' }}>
-                                <FormControl fullWidth>
+                            <div style={{ display: 'flex', marginTop: '15px' }}>
+                                <FormControl sx={{ minWidth: '210px' }}>
                                     <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
                                     <Select
                                         labelId="demo-simple-select-label"
@@ -220,18 +244,18 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
                             Hủy
                         </Button>
                         <Button variant='outlined' onClick={handleSubmit}>
-                            Thêm danh mục
+                            Sửa danh mục
                         </Button>
                     </DialogActions>
                 </BootstrapDialog>
             </React.Fragment>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
                 <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
-                    Thêm danh mục thành công !
+                    Cập nhật danh mục thành công !
                 </Alert>
             </Snackbar>
         </>
     )
 };
 
-export default AddCategory;
+export default EditCategory;

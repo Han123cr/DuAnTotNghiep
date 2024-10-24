@@ -1,7 +1,6 @@
 import { HeaderNav, HeaderUl } from "./Header";
 import Clock from "../Components/Clock"
-import ProductTable from "../Components/Product/ProductTable";
-import AddProduct from "../Components/Product/AddProduct";
+import CategoryTable from "../Components/Category/CategoryTable";
 
 const CategoryPage = () => {
     return (
@@ -36,10 +35,7 @@ const CategoryPage = () => {
                                             <div className="col-md-12">
                                                 <div className="tile">
                                                     <div className="tile-body">
-                                                        <div className="row element-button">
-                                                            <AddProduct />
-                                                        </div>
-                                                        <ProductTable/>
+                                                        <CategoryTable/>
                                                     </div>
                                                 </div>
                                             </div>
