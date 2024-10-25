@@ -70,6 +70,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
     const [description, setDescription] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     // const [isSizeSelected, setIsSizeSelected] = useState(false);
+    const [disabledSizes, setDisabledSizes] = useState<string[]>([]);
 
     const [menuData, setMenuData] = useState<Menu[]>([]);
     const [selectedMenu, setselectedMenu] = useState<number | string>("");
@@ -94,7 +95,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
     useEffect(() => {
         const fetchMenus = async () => {
             try {
-                const response = await fetch(`https://savory.website/api/admin/getMenusAndItems`);
+                const response = await fetch(`https://savory.website/api/admin/getMenus`);
                 const data: Menu[] = await response.json();
                 console.log(data);
                 setMenuData(data)
@@ -136,16 +137,27 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
 
     const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const size = event.target.value;
+
         if (event.target.checked) {
             setSelectedSizes((prevSizes) => [...prevSizes, size]);
             setVariants((prevVariants) => [...prevVariants, { size, price: 0, discount: 0 }]);
         } else {
             setSelectedSizes((prevSizes) => prevSizes.filter((s) => s !== size));
-            setVariants((prevVariants) => prevVariants.filter((variant) => variant.size !== size))
+            setVariants((prevVariants) => prevVariants.filter((variant) => variant.size !== size));
         }
     };
+    
+    useEffect(() => {
+        if (selectedSizes.length === 3) {
+            setDisabledSizes([]); // Nếu có 3 checkbox được chọn thì bật lại tất cả checkbox
+        } else if (selectedSizes.length === 2) {
+            setDisabledSizes(selectedSizes); // Nếu chỉ còn 2 checkbox, vô hiệu hóa checkbox còn lại
+        } else {
+            setDisabledSizes([]); // Nếu ít hơn 2 checkbox được chọn, không disable checkbox nào
+        }
+    }, [selectedSizes]);
 
-    const showPriceFields = selectedSizes.length < 2;
+    const showPriceFields = selectedSizes.includes('basic');
 
     const handleVariantChange = (size: string, price: number, discount: number) => {
         setVariants((prevVariants) =>
@@ -164,7 +176,20 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
     };
 
     const handleLabelClick = () => {
-        setIsDisabled(prevState => !prevState);
+    // Toggle the disabled state of checkboxes
+    setIsDisabled(prevState => !prevState);
+
+    // If checkboxes are being enabled, select all sizes and set variants
+    if (isDisabled) {
+        const allSizes = ['S', 'M', 'L']; // List of all sizes
+        setSelectedSizes(allSizes); // Select all sizes
+        const newVariants = allSizes.map(size => ({ size, price: 0, discount: 0 })); // Set default variants
+        setVariants(newVariants);
+    } else {
+        // If checkboxes are being disabled, clear the selected sizes and variants
+        setSelectedSizes(['basic']);
+        setVariants([{ size: 'basic', price: 0, discount: 0 }]);
+    }
     }
 
     //Đóng mở alert
@@ -279,6 +304,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                                 sx={{ marginTop: '10px' }}
                                 id="demo-row-radio-buttons-group-label"
                                 onClick={handleLabelClick}
+                                style={{cursor: 'pointer'}}
                             >
                                 Chọn kích thước
                             </FormLabel>
@@ -286,7 +312,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                                 {['S', 'M', 'L'].map((size) => (
                                     <FormControlLabel
                                         key={size}
-                                        control={<Checkbox disabled={isDisabled} checked={selectedSizes.includes(size)} onChange={handleSizeChange} value={size} />}
+                                        control={<Checkbox disabled={isDisabled || disabledSizes.includes(size)} checked={selectedSizes.includes(size) || disabledSizes.includes(size)} onChange={handleSizeChange} value={size} />}
                                         label={size}
                                     />
                                 ))}
