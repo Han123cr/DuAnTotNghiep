@@ -21,7 +21,7 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Thống kê</div>
         {/* Nav Item - Dashboard */}
         <li className="nav-item active">
-          <Link to="/admin" className="nav-link">
+          <Link to="/" className="nav-link">
             <i className="fas fa-fw fa-tachometer-alt" />
             <span>Thống kê báo cáo</span>
           </Link>
@@ -86,17 +86,17 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Người dùng</div>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <a className="nav-link" href="#">
+          <Link to='/admin' className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý nhân viên</span>
-          </a>
+          </Link>
         </li>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <a className="nav-link" href="#">
+          <Link to='/customer' className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý khách hàng</span>
-          </a>
+          </Link>
         </li>
         {/* Divider */}
         <hr className="sidebar-divider" />

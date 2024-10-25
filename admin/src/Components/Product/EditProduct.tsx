@@ -230,6 +230,7 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
     return (
         <>
             <button
+                style={{ marginRight: '5px' }}
                 className="btn btn-primary btn-sm edit"
                 type="button"
                 title="Sửa"

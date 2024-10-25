@@ -10,8 +10,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import { FormControl, FormControlLabel, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, SelectChangeEvent, TextField } from '@mui/material';
-import { useState,useEffect } from 'react';
+import { Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import { useState, useEffect } from 'react';
 import { API_Url } from "../../../tsconfig.json"
 
 interface MenuItem {
@@ -25,9 +25,18 @@ interface MenuItem {
     statusToday: string;
     status: string;
     menuID: number;
+    variants: Variant[];
 }
 
-interface Menu{
+interface Variant {
+    variantID?: number;
+    price: number;
+    discount: number;
+    size: string;
+    menuItemID?: number;
+}
+
+interface Menu {
     menuID: number;
     menuName: string;
 }
@@ -48,7 +57,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     // }
 }));
 
-const AddProduct: React.FC<AddProductProps> = ({onAddProduct}) => {
+const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
 
     const [openAlert, setOpenAlert] = useState(false)
     const [open, setOpen] = React.useState(false);
@@ -58,49 +67,44 @@ const AddProduct: React.FC<AddProductProps> = ({onAddProduct}) => {
     const [status, setStatus] = React.useState('');
     const [statusToday, setStatusToday] = React.useState('');
     const [itemName, setItemName] = useState('');
-    const [price, setPrice] = useState<number>(0);
-    const [discount, setDiscount] = useState<number>(0);
     const [description, setDescription] = useState<string>('');
-    const [selectedSize, setSelectedSize] = useState<string>(''); // Size của sản phẩm
     const [file, setFile] = useState<File | null>(null);
-    
+    // const [isSizeSelected, setIsSizeSelected] = useState(false);
+
     const [menuData, setMenuData] = useState<Menu[]>([]);
     const [selectedMenu, setselectedMenu] = useState<number | string>("");
+
+    //State lưu các size được chọn và giá trị tương ứng cho từng size
+    const [selectedSizes, setSelectedSizes] = useState<string[]>(['basic']);
+    const [variants, setVariants] = useState<Variant[]>([{ size: 'basic', price: 0, discount: 0 }]);
 
     const resetForm = () => {
         setFileName('');
         setImageSrc('');
-        setIsDisabled(true);
         setStatus('');
         setStatusToday('');
         setItemName('');
-        setPrice(0);
-        setDiscount(0);
         setDescription('');
-        setSelectedSize('');
         setFile(null);
         setselectedMenu('');
+        setSelectedSizes(['basic']);
+        setVariants([{ size: 'basic', price: 0, discount: 0 }]);
     };
 
     useEffect(() => {
         const fetchMenus = async () => {
-            try{
+            try {
                 const response = await fetch(`https://savory.website/api/admin/getMenusAndItems`);
                 const data: Menu[] = await response.json();
                 console.log(data);
                 setMenuData(data)
-            }catch(err){
+            } catch (err) {
                 console.error(err);
             }
         };
 
         fetchMenus();
     }, []);
-
-    //Chọn size 
-    const handleLabelClick = () => {
-        setIsDisabled(prevState => !prevState);
-    }
 
     //Khi upload ảnh thì sẽ hiện tên file ảnh và hiện ảnh
     const handFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,6 +134,27 @@ const AddProduct: React.FC<AddProductProps> = ({onAddProduct}) => {
         setselectedMenu(Number(event.target.value));
     };
 
+    const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const size = event.target.value;
+        if (event.target.checked) {
+            setSelectedSizes((prevSizes) => [...prevSizes, size]);
+            setVariants((prevVariants) => [...prevVariants, { size, price: 0, discount: 0 }]);
+        } else {
+            setSelectedSizes((prevSizes) => prevSizes.filter((s) => s !== size));
+            setVariants((prevVariants) => prevVariants.filter((variant) => variant.size !== size))
+        }
+    };
+
+    const showPriceFields = selectedSizes.length < 2;
+
+    const handleVariantChange = (size: string, price: number, discount: number) => {
+        setVariants((prevVariants) =>
+            prevVariants.map((variant) =>
+                variant.size === size ? { ...variant, price, discount } : variant
+            )
+        );
+    };
+
     //Đóng mở popup thêm sản phẩm
     const handleClickOpen = () => {
         setOpen(true);
@@ -138,8 +163,11 @@ const AddProduct: React.FC<AddProductProps> = ({onAddProduct}) => {
         setOpen(false);
     };
 
-    //Đóng mở alert
+    const handleLabelClick = () => {
+        setIsDisabled(prevState => !prevState);
+    }
 
+    //Đóng mở alert
     const handleAlertClose = (
         event?: React.SyntheticEvent | Event,
         reason?: SnackbarCloseReason,
@@ -151,18 +179,28 @@ const AddProduct: React.FC<AddProductProps> = ({onAddProduct}) => {
     }
 
     const handleSubmit = async () => {
+        let filteredVariants = variants;
+
+        if (selectedSizes.length > 1 && selectedSizes.includes('basic')) {
+            filteredVariants = variants.filter(variant => variant.size !== 'basic')
+        }
+
         const formData = new FormData();
         formData.append('itemName', itemName);
         if (file) formData.append('itemImage', file);
         formData.append('description', description);
-        formData.append('price', price.toString());
-        formData.append('discount', discount.toString());
-        formData.append('size', selectedSize);
         formData.append('status', status);
         formData.append('statusToday', statusToday);
         if (selectedMenu !== undefined) {
             formData.append('menuID', selectedMenu.toString());
         }
+        filteredVariants.forEach((variant, index) => {
+            formData.append(`variant[${index}][size]`, variant.size);
+            formData.append(`variant[${index}][price]`, variant.price.toString());
+            formData.append(`variant[${index}][discount]`, variant.discount.toString());
+        });
+
+        console.log(itemName, description, fileName, status, statusToday, selectedMenu, filteredVariants);
 
         try {
             const response = await fetch(`${API_Url}/createMenuItem`, {
@@ -180,7 +218,7 @@ const AddProduct: React.FC<AddProductProps> = ({onAddProduct}) => {
             const result = await response.json();
 
             const newProduct = result.data;
-            
+
             onAddProduct(newProduct)
             resetForm();
             //Show thông báo thêm sản phẩm thành công
@@ -242,19 +280,73 @@ const AddProduct: React.FC<AddProductProps> = ({onAddProduct}) => {
                                 id="demo-row-radio-buttons-group-label"
                                 onClick={handleLabelClick}
                             >
-                                Tùy chọn size
+                                Chọn kích thước
                             </FormLabel>
-                            <RadioGroup
-                                row
-                                aria-labelledby="demo-row-radio-buttons-group-label"
-                                name="row-radio-buttons-group"
-                                value={selectedSize}
-                                onChange={(e) => setSelectedSize(e.target.value)}
-                            >
-                                <FormControlLabel value="S" disabled={isDisabled} control={<Radio />} label="S" />
-                                <FormControlLabel value="M" disabled={isDisabled} control={<Radio />} label="M" />
-                                <FormControlLabel value="L" disabled={isDisabled} control={<Radio />} label="L" />
-                            </RadioGroup>
+                            <FormGroup row>
+                                {['S', 'M', 'L'].map((size) => (
+                                    <FormControlLabel
+                                        key={size}
+                                        control={<Checkbox disabled={isDisabled} checked={selectedSizes.includes(size)} onChange={handleSizeChange} value={size} />}
+                                        label={size}
+                                    />
+                                ))}
+                            </FormGroup>
+
+                            {showPriceFields && (
+                                <div style={{ display: 'flex', marginTop: '10px' }}>
+                                    <TextField
+                                        sx={{ width: "50%", marginRight: '10px' }}
+                                        id="outlined-basic"
+                                        label="Giá tiền"
+                                        variant="outlined"
+                                        value={variants.find((variant) => variant.size === 'basic')?.price || ''}
+                                        onChange={(e) =>
+                                            handleVariantChange('basic', parseInt(e.target.value), variants.find((variant) => variant.size === 'basic')?.discount || 0)
+                                        }
+                                    />
+                                    <TextField
+                                        sx={{ width: "50%" }}
+                                        id="outlined-basic"
+                                        label="Giá giảm"
+                                        variant="outlined"
+                                        value={variants.find((variant) => variant.size === 'basic')?.discount || ''}
+                                        onChange={(e) =>
+                                            handleVariantChange('basic', variants.find((variant) => variant.size === 'basic')?.price || 0, parseInt(e.target.value))
+                                        }
+                                    />
+                                </div>
+                            )}
+
+                            {/* Hiển thị giá tiền và giá giảm cho từng size được chọn */}
+                            {selectedSizes.filter(size => size !== 'basic').map((size) => (
+                                <>
+                                    <div style={{ marginTop: "10px" }}>Kích thước {size}</div>
+                                    <div key={size} style={{ display: 'flex', marginTop: '10px' }}>
+                                        <TextField
+                                            sx={{ width: "50%", marginRight: '10px' }}
+                                            id="outlined-basic"
+                                            label={`Giá tiền ${size}`}
+                                            variant="outlined"
+                                            value={variants.find((variant) => variant.size === size)?.price || ''}
+                                            onChange={(e) =>
+                                                handleVariantChange(size, parseInt(e.target.value), variants.find((variant) => variant.size === size)?.discount || 0)
+                                            }
+                                        />
+                                        <TextField
+                                            sx={{ width: "50%" }}
+                                            id="outlined-basic"
+                                            label={`Giá giảm ${size}`}
+                                            variant="outlined"
+                                            value={variants.find((variant) => variant.size === size)?.discount || ''}
+                                            onChange={(e) =>
+                                                handleVariantChange(size, variants.find((variant) => variant.size === size)?.price || 0, parseFloat(e.target.value))
+                                            }
+                                        />
+                                    </div>
+                                </>
+                            ))}
+
+
 
                             <FormControl sx={{ marginTop: '15px' }}>
                                 <InputLabel id="demo-simple-select-label">Danh mục</InputLabel>
@@ -272,25 +364,6 @@ const AddProduct: React.FC<AddProductProps> = ({onAddProduct}) => {
                                     ))};
                                 </Select>
                             </FormControl>
-
-                            <div style={{ display: 'flex', marginTop: '10px' }}>
-                                <TextField
-                                    sx={{ width: "50%", marginRight: '10px' }}
-                                    id="outlined-basic"
-                                    label="Giá tiền"
-                                    variant="outlined"
-                                    value={price}
-                                    onChange={(e) => setPrice(Number(e.target.value))}
-                                />
-                                <TextField
-                                    sx={{ width: "50%" }}
-                                    id="outlined-basic"
-                                    label="Giá giảm"
-                                    variant="outlined"
-                                    value={discount}
-                                    onChange={(e) => setDiscount(Number(e.target.value))}
-                                />
-                            </div>
 
                             <div style={{ display: 'flex', marginTop: '15px' }}>
                                 <FormControl sx={{ minWidth: '210px' }}>

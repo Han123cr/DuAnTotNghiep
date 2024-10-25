@@ -2,6 +2,7 @@ import { API_Url, API_UrlImage } from "../../../tsconfig.json"
 import React, { useEffect, useState } from "react";
 import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
+import ProductVariant from "./ProductVariant";
 import Swal from "sweetalert2";
 import { Chip } from "@mui/material";
 
@@ -109,12 +110,11 @@ const ProductTable: React.FC = () => {
                     <th>STT</th>
                     <th>Tên sản phẩm</th>
                     <th>Ảnh</th>
-                    <th>Giá tiền</th>
                     <th>Danh mục</th>
                     <th>Mô tả</th>
                     <th style={{ width: "120px" }}>Tình trạng</th>
                     <th style={{ width: "120px" }}>Trạng thái</th>
-                    <th style={{ width: "120px" }} >Chức năng</th>
+                    <th style={{ width: "150px" }} >Chức năng</th>
                 </tr>
             </thead>
             <tbody>
@@ -127,7 +127,6 @@ const ProductTable: React.FC = () => {
                         <td>
                             <img src={`${API_UrlImage}/${product.itemImage}`} alt="" width="100px;" />
                         </td>
-                        <td>{product.price}</td>
                         <td>{product.menuID}</td>
                         <td>{product.description}</td>
                         <td>
@@ -144,7 +143,7 @@ const ProductTable: React.FC = () => {
                         </td>
                         <td>
                             <button style={{ marginRight: '5px' }}
-                                className="btn btn-primary btn-sm trash"
+                                className="btn btn-danger btn-sm trash"
                                 type="button"
                                 title="Xóa"
                                 onClick={() => deleteProduct(product.menuItemID, product.itemName)}
@@ -152,6 +151,7 @@ const ProductTable: React.FC = () => {
                                 <i className="fas fa-trash-alt" />
                             </button>
                             <EditProduct productID={product.menuItemID} onEditProduct={handleEditProduct}/>
+                            <ProductVariant productID={product.menuItemID}/>
                         </td>
                     </tr>
                 ))}

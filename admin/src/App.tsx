@@ -6,16 +6,20 @@ import Home from './Pages/Home'
 import Footer from './Pages/Footer'
 import ProductPage from './Pages/ProductPage'
 import CategoryPage from './Pages/CategoryPage'
+import UserPage from './Pages/UserPage'
+import AdminPage from './Pages/AdminPage'
 
 function App() {
   return (
     <>
       <Router>
         <Routes>
-          <Route path='/' element={<Navigate to ='/admin' />} />
-          <Route path='/admin' element={<Home />} />
+          <Route path='/' element={<Navigate to ='/home' />} />
+          <Route path='/home' element={<Home />} />
           <Route path='/product' element={<ProductPage />} />
           <Route path='/category' element={<CategoryPage />} />
+          <Route path='/customer' element={<UserPage />} />
+          <Route path='/admin' element={<AdminPage />} />
         </Routes>
         <Footer />
       </Router>
