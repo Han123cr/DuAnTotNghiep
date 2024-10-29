@@ -23,7 +23,7 @@ const UserTable: React.FC = () => {
 
     const fetchCustomers = async () => {
         try {
-            const response = await fetch(`${API_Url}/getAllCustomers`, {
+            const response = await fetch(`${API_Url}/getCustomers`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import AddCategory from "./AddCategory";
 import EditCategory from "./EditCategory";
 import Swal from "sweetalert2";
-import { Chip } from "@mui/material";
+import { Chip, Pagination } from "@mui/material";
 
 interface Category {
     menuID: number,
@@ -14,6 +14,8 @@ interface Category {
 
 const CategoryTable: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const itemsPerPage = 5;
 
     const fetchCategories = async () => {
         try {
@@ -24,9 +26,9 @@ const CategoryTable: React.FC = () => {
                     'Access-Control-Allow-Origin': '*',
                 },
             });
-            const data = await response.json();
+            const data: Category[] = await response.json();
             //Sắp xếp sản phẩm mới thêm sẽ nằm ở đầu bảng
-            const sortedData = data.sort((a: Category, b: Category) => b.menuID - a.menuID);
+            const sortedData = data.sort((a, b) => b.menuID - a.menuID);
             console.log(data);
             //Hiện sản phẩm
             setCategories(sortedData)
@@ -90,6 +92,16 @@ const CategoryTable: React.FC = () => {
         }
     };
 
+        // Tính toán phân trang
+        const indexOfLastCategory = currentPage * itemsPerPage;
+        const indexOfFirstCategory = indexOfLastCategory - itemsPerPage;
+        const currentCategories = categories.slice(indexOfFirstCategory, indexOfLastCategory);
+        const pageCount = Math.ceil(categories.length / itemsPerPage);
+    
+        const handlePageChange = (event: React.ChangeEvent<unknown>, value: number): void => {
+            setCurrentPage(value);
+        };
+
     return (
         <>
             <AddCategory onAddCategory={handleAddCategory} />
@@ -107,7 +119,7 @@ const CategoryTable: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {categories.map((category, index) => (
+                    {currentCategories.map((category, index) => (
                         <tr key={category.menuID}>
                             <td>
                                 {index + 1}
@@ -138,6 +150,12 @@ const CategoryTable: React.FC = () => {
                     ))}
                 </tbody>
             </table>
+            <Pagination
+                count={pageCount}
+                page={currentPage}
+                onChange={handlePageChange}
+                sx={{display: 'flex', justifyContent: 'center', mt: 2}}
+            />
         </>
     )
 };

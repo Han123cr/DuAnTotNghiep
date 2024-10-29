@@ -4,7 +4,7 @@ import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
 import ProductVariant from "./ProductVariant";
 import Swal from "sweetalert2";
-import { Chip } from "@mui/material";
+import { Chip, Pagination } from "@mui/material";
 
 interface Product {
     menuItemID: number;
@@ -21,6 +21,9 @@ interface Product {
 
 const ProductTable: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
+    const [editedProduct, setEditedProduct] = useState<Product>();
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const itemsPerPage = 5;
 
         const fetchProducts = async () => {
             try {
@@ -53,6 +56,7 @@ const ProductTable: React.FC = () => {
     };
 
     const handleEditProduct = (updatedProduct: Product) => {
+        setEditedProduct(updatedProduct);
         setProducts((prevProducts) => 
             prevProducts.map(product => 
                 product.menuItemID === updatedProduct.menuItemID ? updatedProduct : product
@@ -99,6 +103,17 @@ const ProductTable: React.FC = () => {
     }
 };
 
+        // Tính toán phân trang
+        const indexOfLastProduct = currentPage * itemsPerPage;
+        const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+        const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+        const pageCount = Math.ceil(products.length / itemsPerPage);
+    
+        const handlePageChange = (event: React.ChangeEvent<unknown>, value: number): void => {
+            setCurrentPage(value);
+        };
+
+
     return (
         <>
         <div className="row element-button">
@@ -118,7 +133,7 @@ const ProductTable: React.FC = () => {
                 </tr>
             </thead>
             <tbody>
-                {products.map((product, index) => (
+                {currentProducts.map((product, index) => (
                     <tr key={product.menuItemID}>
                         <td>
                             {index + 1}
@@ -151,12 +166,19 @@ const ProductTable: React.FC = () => {
                                 <i className="fas fa-trash-alt" />
                             </button>
                             <EditProduct productID={product.menuItemID} onEditProduct={handleEditProduct}/>
-                            <ProductVariant productID={product.menuItemID}/>
+                            <ProductVariant productID={product.menuItemID} updatedProduct={editedProduct} />
                         </td>
                     </tr>
                 ))}
             </tbody>
         </table>
+            <Pagination
+                count={pageCount}
+                variant="outlined"
+                page={currentPage}
+                onChange={handlePageChange}
+                sx={{display: 'flex', justifyContent: 'center', mt: 2}}
+            />
         </>
     )
 };

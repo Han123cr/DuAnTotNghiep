@@ -61,22 +61,20 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
-    const [isDisabled, setIsDisabled] = useState(true);
     const [status, setStatus] = React.useState('');
     const [statusToday, setStatusToday] = React.useState('');
     const [itemName, setItemName] = useState('');
     const [description, setDescription] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
-    // const [isSizeSelected, setIsSizeSelected] = useState(false);
 
     const [menuData, setMenuData] = useState<Menu[]>([]);
     const [selectedMenu, setselectedMenu] = useState<number | string>("");
 
     //State lưu các size được chọn và giá trị tương ứng cho từng size
-    const [selectedSizes, setSelectedSizes] = useState<string[]>(['basic']);
-    const [variants, setVariants] = useState<Variant[]>([{ size: 'basic', price: 0, discount: 0 }]);
+    const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+    const [variants, setVariants] = useState<Variant[]>([]);
 
-    useEffect(() => {
+    //Load danh mục
         const fetchMenus = async () => {
             try {
                 const response = await fetch(`https://savory.website/api/admin/getMenus`);
@@ -88,8 +86,6 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
             }
         };
 
-        fetchMenus();
-    }, []);
 
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -135,6 +131,7 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
 
     const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const size = event.target.value;
+
         if (event.target.checked) {
             setSelectedSizes((prevSizes) => [...prevSizes, size]);
             setVariants((prevVariants) => [...prevVariants, { size, price: 0, discount: 0 }]);
@@ -142,20 +139,29 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
             setSelectedSizes((prevSizes) => prevSizes.filter((s) => s !== size));
             setVariants((prevVariants) => prevVariants.filter((variant) => variant.size !== size));
         }
+
+        if (size !== 'basic') {
+            setVariants((prevVariants) => {
+                return prevVariants.filter(variant => variant.size !== 'basic');
+            });
+            setSelectedSizes((prevSizes) => prevSizes.filter(s => s !== 'basic'));
+        }
     };
+
+    const shouldShowBasic = selectedSizes.length === 0;
 
     const handleVariantChange = (size: string, price: number, discount: number) => {
-        setVariants((prevVariants) =>
-            prevVariants.map((variant) =>
-                variant.size === size ? { ...variant, price, discount } : variant
-            )
-        );
+        setVariants((prevVariants) => {
+            const existingVariant = prevVariants.find((variant) => variant.size === size);
+            if (existingVariant) {
+                return prevVariants.map((variant) =>
+                    variant.size === size ? { ...variant, price, discount } : variant
+                );
+            } else {
+                return [...prevVariants, { size, price, discount }];
+            }
+        });
     };
-
-    //Chọn size 
-    const handleLabelClick = () => {
-        setIsDisabled(prevState => !prevState);
-    }
 
     //Khi upload ảnh thì sẽ hiện tên file ảnh và hiện ảnh
     const handFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,6 +194,7 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
     //Đóng mở popup thêm sản phẩm
     const handleClickOpen = () => {
         setOpen(true);
+        fetchMenus()
     };
     const handleClose = () => {
         setOpen(false);
@@ -207,12 +214,16 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
     }
 
     const handleSubmit = async () => {
-        // let filteredVariants = variants;
+        let filteredVariants = variants;
 
-        // if (selectedSizes.length > 1 && selectedSizes.includes('basic')) {
-        //     filteredVariants = variants.filter(variant => variant.size !== 'basic')
-        // }
-
+        // Check if only size 'S' is selected
+        if (selectedSizes.length === 1 && selectedSizes.includes('S')) {
+            // If only size 'S' is selected, change it to 'basic'
+            filteredVariants = [{ size: 'basic', price: variants.find(v => v.size === 'S')?.price || 0, discount: variants.find(v => v.size === 'S')?.discount || 0 }];
+        } else {
+            // Otherwise, keep the selected sizes as they are
+            filteredVariants = variants.filter(variant => selectedSizes.includes(variant.size));
+        }
         const formData = new FormData();
         formData.append('itemName', itemName);
         if (file) formData.append('itemImage', file);
@@ -222,13 +233,13 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
         if (selectedMenu !== undefined) {
             formData.append('menuID', selectedMenu.toString());
         }
-        variants.forEach((variant, index) => {
+        filteredVariants.forEach((variant, index) => {
             formData.append(`variant[${index}][size]`, variant.size);
             formData.append(`variant[${index}][price]`, variant.price.toString());
             formData.append(`variant[${index}][discount]`, variant.discount.toString());
         });
 
-        console.log(itemName, description, fileName, status, statusToday, selectedMenu, variants);
+        console.log(itemName, description, fileName, status, statusToday, selectedMenu, filteredVariants);
 
         try {
             const response = await fetch(`${API_Url}/updateMenuItem/${productID}`, {
@@ -241,8 +252,8 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                 throw new Error('Thất bại khi sửa sản phẩm');
             }
 
-            const updatedProduct = await response.json();
-            // const updatedProduct = result.data;
+            const result = await response.json();
+            const updatedProduct = result.data;
             onEditProduct(updatedProduct);
             // resetForm();
             //Show thông báo thêm sản phẩm thành công
@@ -296,7 +307,7 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                             <div style={{ display: 'flex' }}>
                                 <TextField
                                     fullWidth
-                                    id="outlined-basic"
+                                    id="outlined"
                                     label="Tên sản phẩm"
                                     variant="outlined"
                                     value={itemName}
@@ -306,7 +317,7 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                             <FormLabel
                                 sx={{ marginTop: '10px' }}
                                 id="demo-row-radio-buttons-group-label"
-                                onClick={handleLabelClick}
+                                style={{ cursor: 'pointer' }}
                             >
                                 Chọn kích thước
                             </FormLabel>
@@ -314,41 +325,16 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                                 {['S', 'M', 'L'].map((size) => (
                                     <FormControlLabel
                                         key={size}
-                                        control={<Checkbox disabled={isDisabled} checked={selectedSizes.includes(size)} onChange={handleSizeChange} value={size} />}
-                                        label={size}
+                                        control={<Checkbox checked={selectedSizes.includes(size)} onChange={handleSizeChange} value={size} />}
+                                        label={size === 'S' ? `${size} (mặc định)` : size}
                                     />
                                 ))}
                             </FormGroup>
 
-                            {selectedSizes.length < 2 && (
-                                <div style={{ display: 'flex', marginTop: '10px' }}>
-                                <TextField
-                                    sx={{ width: "50%", marginRight: '10px' }}
-                                    id="outlined-basic"
-                                    label="Giá tiền"
-                                    variant="outlined"
-                                    value={variants.find((variant) => variant.size === 'basic')?.price || ''}
-                                    onChange={(e) =>
-                                        handleVariantChange('basic', parseInt(e.target.value), variants.find((variant) => variant.size === 'basic')?.discount || 0)
-                                    }
-                                />
-                                <TextField
-                                    sx={{ width: "50%" }}
-                                    id="outlined-basic"
-                                    label="Giá giảm"
-                                    variant="outlined"
-                                    value={variants.find((variant) => variant.size === 'basic')?.discount || ''}
-                                    onChange={(e) =>
-                                        handleVariantChange('basic', variants.find((variant) => variant.size === 'basic')?.price || 0, parseInt(e.target.value))
-                                    }
-                                />
-                            </div>
-                            )}
-
-                            {selectedSizes.filter(size => size !== 'basic').map((size) => (
-                                                                <>
+                            {selectedSizes.map((size) => (
+                                <div key={size}>
                                     <div style={{ marginTop: "10px" }}>Kích thước {size}</div>
-                                    <div key={size} style={{ display: 'flex', marginTop: '10px' }}>
+                                    <div style={{ display: 'flex', marginTop: '10px' }}>
                                         <TextField
                                             sx={{ width: "50%", marginRight: '10px' }}
                                             id="outlined-basic"
@@ -370,106 +356,138 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                                             }
                                         />
                                     </div>
-                                    </>
+                                </div>
                             ))}
-                            {/* Hiển danh mục được chọn */ }
-                                < FormControl sx = {{ marginTop: '15px' }}>
-                            <InputLabel id="demo-simple-select-label">Danh mục</InputLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={selectedMenu?.toString()}
-                                label="Danh mục"
-                                onChange={handChangeMenu}
-                            >
-                                {menuData.map((menu) => (
-                                    <MenuItem key={menu.menuID} value={menu.menuID}>
-                                        {menu.menuName}
-                                    </MenuItem>
-                                ))};
-                            </Select>
-                        </FormControl>
+                            {/* Show basic input only if no other sizes are selected */}
+                            {shouldShowBasic && (
+                                <>
+                                    <div style={{ marginTop: "10px" }}>Kích thước Basic</div>
+                                    <div style={{ display: 'flex', marginTop: '10px' }}>
+                                        <TextField
+                                            sx={{ width: "50%", marginRight: '10px' }}
+                                            id="outlined-basic-basic"
+                                            label={`Giá tiền Basic`}
+                                            variant="outlined"
+                                            value={variants.find((variant) => variant.size === 'basic')?.price || 0}
+                                            onChange={(e) =>
+                                                handleVariantChange('basic', parseInt(e.target.value), variants.find((variant) => variant.size === 'basic')?.discount || 0)
+                                            }
+                                        />
+                                        <TextField
+                                            sx={{ width: "50%" }}
+                                            id="outlined-basic-basic-discount"
+                                            label={`Giá giảm Basic`}
+                                            variant="outlined"
+                                            value={variants.find((variant) => variant.size === 'basic')?.discount || 0}
+                                            onChange={(e) =>
+                                                handleVariantChange('basic', variants.find((variant) => variant.size === 'basic')?.price || 0, parseFloat(e.target.value))
+                                            }
+                                        />
+                                    </div>
+                                </>
+                            )}
+                            {/* Hiển thị giá tiền và giá giảm cho từng size được chọn */}
 
-                        <div style={{ display: 'flex', marginTop: '15px' }}>
-                            <FormControl sx={{ minWidth: '210px' }}>
-                                <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
+
+
+
+                            <FormControl sx={{ marginTop: '15px' }}>
+                                <InputLabel id="demo-simple-select-label">Danh mục</InputLabel>
                                 <Select
                                     labelId="demo-simple-select-label"
                                     id="demo-simple-select"
-                                    value={status}
-                                    label="Trạng thái"
-                                    onChange={handChangeStatus}
+                                    value={selectedMenu?.toString()}
+                                    label="Danh mục"
+                                    onChange={handChangeMenu}
                                 >
-                                    <MenuItem value='hidden'>Ẩn</MenuItem>
-                                    <MenuItem value='display'>Hiện</MenuItem>
+                                    {menuData.map((menu) => (
+                                        <MenuItem key={menu.menuID} value={menu.menuID}>
+                                            {menu.menuName}
+                                        </MenuItem>
+                                    ))};
                                 </Select>
                             </FormControl>
-                            <FormControl sx={{ minWidth: '210px', marginLeft: '10px' }}>
-                                <InputLabel id="demo-simple-select-label">Tình trạng</InputLabel>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    value={statusToday}
-                                    label="Trạng thái"
-                                    onChange={handChangeStatusToday}
-                                >
-                                    <MenuItem value='inStock'>Còn hàng</MenuItem>
-                                    <MenuItem value='outOfStock'>Hết hàng</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </div>
 
-                        <div style={{ display: 'flex', alignItems: 'flex-start', marginTop: '10px' }}>
-                            <Button
-                                sx={{ margin: '10px 10px 0 0' }}
-                                variant="contained"
-                                component="label"
-                            >
-                                Upload File
-                                <input
-                                    type="file"
-                                    hidden
-                                    onChange={handFileChange}
-                                />
-                            </Button>
-                            <TextField sx={{ width: "300px" }}
-                                disabled
-                                id="outlined-disabled"
-                                label=""
-                                value={fileName}
-                            />
-                        </div>
-                        {imageSrc && (
-                            <div style={{ marginTop: '10px' }}>
-                                <img src={imageSrc} alt="" style={{ maxWidth: '300px', maxHeight: '300px' }} />
+                            <div style={{ display: 'flex', marginTop: '15px' }}>
+                                <FormControl sx={{ minWidth: '210px' }}>
+                                    <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
+                                    <Select
+                                        labelId="demo-simple-select-label"
+                                        id="demo-simple-select"
+                                        value={status}
+                                        label="Trạng thái"
+                                        onChange={handChangeStatus}
+                                    >
+                                        <MenuItem value='hidden'>Ẩn</MenuItem>
+                                        <MenuItem value='display'>Hiện</MenuItem>
+                                    </Select>
+                                </FormControl>
+                                <FormControl sx={{ minWidth: '210px', marginLeft: '10px' }}>
+                                    <InputLabel id="demo-simple-select-label">Tình trạng</InputLabel>
+                                    <Select
+                                        labelId="demo-simple-select-label"
+                                        id="demo-simple-select"
+                                        value={statusToday}
+                                        label="Trạng thái"
+                                        onChange={handChangeStatusToday}
+                                    >
+                                        <MenuItem value='inStock'>Còn hàng</MenuItem>
+                                        <MenuItem value='outOfStock'>Hết hàng</MenuItem>
+                                    </Select>
+                                </FormControl>
                             </div>
-                        )}
-                        <TextField
-                            fullWidth
-                            sx={{ marginTop: '10px' }}
-                            multiline
-                            rows={2}
-                            id="outlined-basic"
-                            label="Mô tả"
-                            variant="outlined"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                    </FormControl>
-                </DialogContent>
-                <DialogActions>
-                    <Button variant="outlined" color="error" onClick={handleClose}>
-                        Hủy
-                    </Button>
-                    <Button variant='outlined' onClick={handleSubmit}>
-                        Thêm sản phẩm
-                    </Button>
-                </DialogActions>
-            </BootstrapDialog>
-        </React.Fragment >
+
+                            <div style={{ display: 'flex', alignItems: 'flex-start', marginTop: '10px' }}>
+                                <Button
+                                    sx={{ margin: '10px 10px 0 0' }}
+                                    variant="contained"
+                                    component="label"
+                                >
+                                    Upload File
+                                    <input
+                                        type="file"
+                                        hidden
+                                        onChange={handFileChange}
+                                    />
+                                </Button>
+                                <TextField sx={{ width: "300px" }}
+                                    disabled
+                                    id="outlined-disabled"
+                                    label=""
+                                    value={fileName}
+                                />
+                            </div>
+                            {imageSrc && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <img src={imageSrc} alt="" style={{ maxWidth: '300px', maxHeight: '300px' }} />
+                                </div>
+                            )}
+                            <TextField
+                                fullWidth
+                                sx={{ marginTop: '10px' }}
+                                multiline
+                                rows={2}
+                                id="outlined-basic"
+                                label="Mô tả"
+                                variant="outlined"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
+                        </FormControl>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button variant="outlined" color="error" onClick={handleClose}>
+                            Hủy
+                        </Button>
+                        <Button variant='outlined' onClick={handleSubmit}>
+                            Sửa sản phẩm
+                        </Button>
+                    </DialogActions>
+                </BootstrapDialog>
+            </React.Fragment>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
                 <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
-                    Thêm sản phẩm thành công !
+                    Sửa sản phẩm thành công !
                 </Alert>
             </Snackbar>
         </>

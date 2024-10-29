@@ -196,8 +196,8 @@ const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory 
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', marginTop: '15px' }}>
-                                <FormControl sx={{ minWidth: '210px' }}>
+                            <div style={{ marginTop: '15px' }}>
+                                <FormControl fullWidth>
                                     <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
                                     <Select
                                         labelId="demo-simple-select-label"

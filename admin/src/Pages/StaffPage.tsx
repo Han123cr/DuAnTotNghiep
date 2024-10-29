@@ -1,7 +1,7 @@
 import { HeaderNav, HeaderUl } from "./Header";
 import Clock from "../Components/Clock"
-import AdminTable from "../Components/Staff/AdminTable";
-const AdminPage = () => {
+import StaffTable from "../Components/Staff/StaffTable";
+const StaffPage = () => {
     return (
         <>
             <div id="page-top">
@@ -34,7 +34,7 @@ const AdminPage = () => {
                                             <div className="col-md-12">
                                                 <div className="tile">
                                                     <div className="tile-body">
-                                                        <AdminTable/>
+                                                        <StaffTable/>
                                                     </div>
                                                 </div>
                                             </div>
@@ -57,4 +57,4 @@ const AdminPage = () => {
     )
 }
 
-export default AdminPage;
+export default StaffPage;

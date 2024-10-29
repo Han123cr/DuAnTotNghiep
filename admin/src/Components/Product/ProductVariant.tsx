@@ -10,6 +10,18 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect } from 'react';
 import { API_Url } from "../../../tsconfig.json"
 
+interface Product {
+    menuItemID: number;
+    itemName: string;
+    itemImage: string | null;
+    description: string;
+    price: number;
+    discount: number;
+    size: string;
+    statusToday: string;
+    status: string;
+    menuID: number;
+}
 interface Variant {
     variantID: number;
     price: number;
@@ -20,6 +32,7 @@ interface Variant {
 
 interface ProductVariantProps {
     productID: number;  // Accept the product ID as a prop
+    updatedProduct?: Product;
 }
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -46,6 +59,8 @@ const ProductVariant: React.FC<ProductVariantProps> = ({productID}) => {
 
     useEffect(() => {
     const fetchProductVariants = async () => {
+        if (!productID) return;
+
         try {
             const response = await fetch(`${API_Url}/getMenuItemDetails/${productID}`, {
                 method: 'GET',
@@ -56,17 +71,16 @@ const ProductVariant: React.FC<ProductVariantProps> = ({productID}) => {
             });
             const product = await response.json();
             setVariants(product.variants)
-
         } catch (err) {
             console.error(err);
         }
     };
 
     
-        if(productID){
+        if(open && productID){
             fetchProductVariants();
         }
-    }, [productID]);
+    }, [open, productID]);
 
     return (
         <>

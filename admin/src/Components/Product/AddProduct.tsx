@@ -52,9 +52,6 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialogActions-root': {
         padding: theme.spacing(1),
     },
-    // '& .MuiDialog-paperWidthSm': {
-    //     width: '800px'
-    // }
 }));
 
 const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
@@ -63,21 +60,18 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
-    const [isDisabled, setIsDisabled] = useState(true);
     const [status, setStatus] = React.useState('');
     const [statusToday, setStatusToday] = React.useState('');
     const [itemName, setItemName] = useState('');
     const [description, setDescription] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
-    // const [isSizeSelected, setIsSizeSelected] = useState(false);
-    const [disabledSizes, setDisabledSizes] = useState<string[]>([]);
-
+    const [singleSizeAlert, setSingleSizeAlert] = useState(false);
     const [menuData, setMenuData] = useState<Menu[]>([]);
     const [selectedMenu, setselectedMenu] = useState<number | string>("");
 
     //State lưu các size được chọn và giá trị tương ứng cho từng size
-    const [selectedSizes, setSelectedSizes] = useState<string[]>(['basic']);
-    const [variants, setVariants] = useState<Variant[]>([{ size: 'basic', price: 0, discount: 0 }]);
+    const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+    const [variants, setVariants] = useState<Variant[]>([]);
 
     const resetForm = () => {
         setFileName('');
@@ -88,8 +82,8 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
         setDescription('');
         setFile(null);
         setselectedMenu('');
-        setSelectedSizes(['basic']);
-        setVariants([{ size: 'basic', price: 0, discount: 0 }]);
+        setSelectedSizes([]);
+        setVariants([]);
     };
 
     useEffect(() => {
@@ -146,25 +140,18 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
             setVariants((prevVariants) => prevVariants.filter((variant) => variant.size !== size));
         }
     };
-    
-    useEffect(() => {
-        if (selectedSizes.length === 3) {
-            setDisabledSizes([]); // Nếu có 3 checkbox được chọn thì bật lại tất cả checkbox
-        } else if (selectedSizes.length === 2) {
-            setDisabledSizes(selectedSizes); // Nếu chỉ còn 2 checkbox, vô hiệu hóa checkbox còn lại
-        } else {
-            setDisabledSizes([]); // Nếu ít hơn 2 checkbox được chọn, không disable checkbox nào
-        }
-    }, [selectedSizes]);
-
-    const showPriceFields = selectedSizes.includes('basic');
 
     const handleVariantChange = (size: string, price: number, discount: number) => {
-        setVariants((prevVariants) =>
-            prevVariants.map((variant) =>
-                variant.size === size ? { ...variant, price, discount } : variant
-            )
-        );
+        setVariants((prevVariants) => {
+            const existingVariant = prevVariants.find((variant) => variant.size === size);
+            if (existingVariant) {
+                return prevVariants.map((variant) =>
+                    variant.size === size ? { ...variant, price, discount } : variant
+                );
+            } else {
+                return [...prevVariants, { size, price, discount }];
+            }
+        });
     };
 
     //Đóng mở popup thêm sản phẩm
@@ -174,23 +161,6 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
     const handleClose = () => {
         setOpen(false);
     };
-
-    const handleLabelClick = () => {
-    // Toggle the disabled state of checkboxes
-    setIsDisabled(prevState => !prevState);
-
-    // If checkboxes are being enabled, select all sizes and set variants
-    if (isDisabled) {
-        const allSizes = ['S', 'M', 'L']; // List of all sizes
-        setSelectedSizes(allSizes); // Select all sizes
-        const newVariants = allSizes.map(size => ({ size, price: 0, discount: 0 })); // Set default variants
-        setVariants(newVariants);
-    } else {
-        // If checkboxes are being disabled, clear the selected sizes and variants
-        setSelectedSizes(['basic']);
-        setVariants([{ size: 'basic', price: 0, discount: 0 }]);
-    }
-    }
 
     //Đóng mở alert
     const handleAlertClose = (
@@ -206,10 +176,21 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
     const handleSubmit = async () => {
         let filteredVariants = variants;
 
-        if (selectedSizes.length > 1 && selectedSizes.includes('basic')) {
-            filteredVariants = variants.filter(variant => variant.size !== 'basic')
-        }
+            if (selectedSizes.length === 1 && selectedSizes[0] !== 'S') {
+                setSingleSizeAlert(true); // Show alert if only one size is selected and it's not S
+                return;
+            }
+    
+            setSingleSizeAlert(false);
 
+        // Check if only size 'S' is selected
+        if (selectedSizes.length === 1 && selectedSizes.includes('S')) {
+            // If only size 'S' is selected, change it to 'basic'
+            filteredVariants = [{ size: 'basic', price: variants.find(v => v.size === 'S')?.price || 0, discount: variants.find(v => v.size === 'S')?.discount || 0 }];
+        } else {
+            // Otherwise, keep the selected sizes as they are
+            filteredVariants = variants.filter(variant => selectedSizes.includes(variant.size));
+        }
         const formData = new FormData();
         formData.append('itemName', itemName);
         if (file) formData.append('itemImage', file);
@@ -293,7 +274,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                             <div style={{ display: 'flex' }}>
                                 <TextField
                                     fullWidth
-                                    id="outlined-basic"
+                                    id="outlined"
                                     label="Tên sản phẩm"
                                     variant="outlined"
                                     value={itemName}
@@ -303,8 +284,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                             <FormLabel
                                 sx={{ marginTop: '10px' }}
                                 id="demo-row-radio-buttons-group-label"
-                                onClick={handleLabelClick}
-                                style={{cursor: 'pointer'}}
+                                style={{ cursor: 'pointer' }}
                             >
                                 Chọn kích thước
                             </FormLabel>
@@ -312,39 +292,13 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                                 {['S', 'M', 'L'].map((size) => (
                                     <FormControlLabel
                                         key={size}
-                                        control={<Checkbox disabled={isDisabled || disabledSizes.includes(size)} checked={selectedSizes.includes(size) || disabledSizes.includes(size)} onChange={handleSizeChange} value={size} />}
-                                        label={size}
+                                        control={<Checkbox checked={selectedSizes.includes(size)} onChange={handleSizeChange} value={size} />}
+                                        label={size === 'S' ? `${size} (mặc định)` : size}
                                     />
                                 ))}
                             </FormGroup>
 
-                            {showPriceFields && (
-                                <div style={{ display: 'flex', marginTop: '10px' }}>
-                                    <TextField
-                                        sx={{ width: "50%", marginRight: '10px' }}
-                                        id="outlined-basic"
-                                        label="Giá tiền"
-                                        variant="outlined"
-                                        value={variants.find((variant) => variant.size === 'basic')?.price || ''}
-                                        onChange={(e) =>
-                                            handleVariantChange('basic', parseInt(e.target.value), variants.find((variant) => variant.size === 'basic')?.discount || 0)
-                                        }
-                                    />
-                                    <TextField
-                                        sx={{ width: "50%" }}
-                                        id="outlined-basic"
-                                        label="Giá giảm"
-                                        variant="outlined"
-                                        value={variants.find((variant) => variant.size === 'basic')?.discount || ''}
-                                        onChange={(e) =>
-                                            handleVariantChange('basic', variants.find((variant) => variant.size === 'basic')?.price || 0, parseInt(e.target.value))
-                                        }
-                                    />
-                                </div>
-                            )}
-
-                            {/* Hiển thị giá tiền và giá giảm cho từng size được chọn */}
-                            {selectedSizes.filter(size => size !== 'basic').map((size) => (
+                            {selectedSizes.map((size) => (
                                 <>
                                     <div style={{ marginTop: "10px" }}>Kích thước {size}</div>
                                     <div key={size} style={{ display: 'flex', marginTop: '10px' }}>
@@ -371,6 +325,8 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                                     </div>
                                 </>
                             ))}
+                            {/* Hiển thị giá tiền và giá giảm cho từng size được chọn */}
+
 
 
 
@@ -456,6 +412,11 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                             />
+                            {singleSizeAlert && (
+                            <Alert severity="warning" sx={{ maxWidth: '420px', marginTop: '10px' }}>
+                                Vui lòng chọn 2 size trở nên, nếu chọn 1 size thì chọn size S.
+                            </Alert>
+                        )}
                         </FormControl>
                     </DialogContent>
                     <DialogActions>

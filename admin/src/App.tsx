@@ -7,7 +7,7 @@ import Footer from './Pages/Footer'
 import ProductPage from './Pages/ProductPage'
 import CategoryPage from './Pages/CategoryPage'
 import UserPage from './Pages/UserPage'
-import AdminPage from './Pages/AdminPage'
+import StaffPage from './Pages/StaffPage'
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
           <Route path='/product' element={<ProductPage />} />
           <Route path='/category' element={<CategoryPage />} />
           <Route path='/customer' element={<UserPage />} />
-          <Route path='/admin' element={<AdminPage />} />
+          <Route path='/staff' element={<StaffPage />} />
         </Routes>
         <Footer />
       </Router>

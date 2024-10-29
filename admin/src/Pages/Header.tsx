@@ -86,7 +86,7 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Người dùng</div>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <Link to='/admin' className="nav-link">
+          <Link to='/staff' className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý nhân viên</span>
           </Link>

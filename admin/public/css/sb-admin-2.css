@@ -11425,3 +11425,8 @@ body.sidebar-toggled footer.sticky-footer {
 .fixicon{
   margin: 76px -5px 0px 0px;
 }
+
+.blocked-row{
+  opacity: 0.6;
+  pointer-events: none;
+}
