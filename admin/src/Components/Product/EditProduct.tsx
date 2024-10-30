@@ -66,7 +66,7 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
     const [itemName, setItemName] = useState('');
     const [description, setDescription] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
-
+    const [singleSizeAlert, setSingleSizeAlert] = useState(false);
     const [menuData, setMenuData] = useState<Menu[]>([]);
     const [selectedMenu, setselectedMenu] = useState<number | string>("");
 
@@ -215,6 +215,13 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
 
     const handleSubmit = async () => {
         let filteredVariants = variants;
+
+        if (selectedSizes.length === 1 && selectedSizes[0] !== 'S') {
+            setSingleSizeAlert(true); // Show alert if only one size is selected and it's not S
+            return;
+        }
+
+        setSingleSizeAlert(false);
 
         // Check if only size 'S' is selected
         if (selectedSizes.length === 1 && selectedSizes.includes('S')) {
@@ -473,6 +480,11 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                             />
+                            {singleSizeAlert && (
+                            <Alert severity="warning" sx={{ maxWidth: '420px', marginTop: '10px' }}>
+                                Vui lòng chọn 2 size trở nên, nếu chọn 1 size thì chọn size S.
+                            </Alert>
+                            )}
                         </FormControl>
                     </DialogContent>
                     <DialogActions>

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import AddCategory from "./AddCategory";
 import EditCategory from "./EditCategory";
 import Swal from "sweetalert2";
-import { Chip, Pagination } from "@mui/material";
+import { Chip, Pagination, TextField } from "@mui/material";
 
 interface Category {
     menuID: number,
@@ -15,6 +15,7 @@ interface Category {
 const CategoryTable: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [searchQuery, setSearchQuery] = useState<string>('');
     const itemsPerPage = 5;
 
     const fetchCategories = async () => {
@@ -44,12 +45,12 @@ const CategoryTable: React.FC = () => {
 
     // //Hàm để thêm sản phẩm mới vào danh sách
     const handleAddCategory = (newCategory: Category) => {
-        setCategories((prevCategories) => [newCategory,...prevCategories]);
+        setCategories((prevCategories) => [newCategory, ...prevCategories]);
     };
 
-    const handleEditCategory= (updatedCategory: Category) => {
-        setCategories((prevCategories) => 
-            prevCategories.map(category => 
+    const handleEditCategory = (updatedCategory: Category) => {
+        setCategories((prevCategories) =>
+            prevCategories.map(category =>
                 category.menuID === updatedCategory.menuID ? updatedCategory : category
             )
         );
@@ -92,19 +93,38 @@ const CategoryTable: React.FC = () => {
         }
     };
 
-        // Tính toán phân trang
-        const indexOfLastCategory = currentPage * itemsPerPage;
-        const indexOfFirstCategory = indexOfLastCategory - itemsPerPage;
-        const currentCategories = categories.slice(indexOfFirstCategory, indexOfLastCategory);
-        const pageCount = Math.ceil(categories.length / itemsPerPage);
-    
-        const handlePageChange = (event: React.ChangeEvent<unknown>, value: number): void => {
-            setCurrentPage(value);
-        };
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(event.target.value);
+    }
+
+    const filteredCategories = categories.filter(category =>
+        category.menuName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Tính toán phân trang
+    const indexOfLastCategory = currentPage * itemsPerPage;
+    const indexOfFirstCategory = indexOfLastCategory - itemsPerPage;
+    const currentCategories = filteredCategories.slice(indexOfFirstCategory, indexOfLastCategory);
+    const pageCount = Math.ceil(filteredCategories.length / itemsPerPage);
+
+    const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number): void => {
+        setCurrentPage(value);
+    };
 
     return (
         <>
-            <AddCategory onAddCategory={handleAddCategory} />
+            <div style={{ display: 'flex' }}>
+                <AddCategory onAddCategory={handleAddCategory} />
+                <TextField
+                    variant="outlined"
+                    size="small" // Làm cho TextField nhỏ hơn
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    sx={{ width: 200, mb: 2, left: '540px' }}
+                    placeholder="Tìm kiếm..."
+                />
+            </div>
+
             <div className="row element-button">
                 {/* <AddProduct onAddProduct={handleAddProduct} /> */}
             </div>
@@ -143,7 +163,7 @@ const CategoryTable: React.FC = () => {
                                 >
                                     <i className="fas fa-trash-alt" />
                                 </button>
-                                <EditCategory categoryID={category.menuID} onEditCategory={handleEditCategory}/>
+                                <EditCategory categoryID={category.menuID} onEditCategory={handleEditCategory} />
                                 {/* <EditProduct productID={product.menuItemID} onEditProduct={handleEditProduct}/> */}
                             </td>
                         </tr>
@@ -154,7 +174,7 @@ const CategoryTable: React.FC = () => {
                 count={pageCount}
                 page={currentPage}
                 onChange={handlePageChange}
-                sx={{display: 'flex', justifyContent: 'center', mt: 2}}
+                sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
             />
         </>
     )

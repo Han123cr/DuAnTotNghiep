@@ -115,10 +115,10 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Ưu đãi</div>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <a className="nav-link" href="#">
+          <Link to="/voucher" className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý ưu đãi</span>
-          </a>
+          </Link>
         </li>
         {/* Divider */}
         <hr className="sidebar-divider" />
@@ -148,22 +148,6 @@ export const HeaderNav = () => {
           <i className="fa fa-bars" />
         </button>
         {/* Topbar Search */}
-        <form className="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-          <div className="input-group">
-            <input
-              type="text"
-              className="form-control bg-light border-0 small"
-              placeholder="Search for..."
-              aria-label="Search"
-              aria-describedby="basic-addon2"
-            />
-            <div className="input-group-append">
-              <button className="btn btn-primary" type="button">
-                <i className="fas fa-search fa-sm" />
-              </button>
-            </div>
-          </div>
-        </form>
         {/* Topbar Navbar */}
         <ul className="navbar-nav ml-auto">
           {/* Nav Item - Search Dropdown (Visible Only XS) */}

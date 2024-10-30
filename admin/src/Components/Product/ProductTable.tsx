@@ -4,7 +4,7 @@ import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
 import ProductVariant from "./ProductVariant";
 import Swal from "sweetalert2";
-import { Chip, Pagination } from "@mui/material";
+import { Chip, Pagination, TextField } from "@mui/material";
 
 interface Product {
     menuItemID: number;
@@ -23,42 +23,43 @@ const ProductTable: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [editedProduct, setEditedProduct] = useState<Product>();
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [searchQuery, setSearchQuery] = useState<string>('');
     const itemsPerPage = 5;
 
-        const fetchProducts = async () => {
-            try {
-                const response = await fetch(`${API_Url}/getMenuItems`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*',
-                    },
-                });
-                const data = await response.json();
-                //Sắp xếp sản phẩm mới thêm sẽ nằm ở đầu bảng
-                const sortedData = data.sort((a: Product, b: Product) => b.menuItemID - a.menuItemID);
-                console.log(data);
-                //Hiện sản phẩm
-                setProducts(sortedData)
+    const fetchProducts = async () => {
+        try {
+            const response = await fetch(`${API_Url}/getMenuItems`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                },
+            });
+            const data = await response.json();
+            //Sắp xếp sản phẩm mới thêm sẽ nằm ở đầu bảng
+            const sortedData = data.sort((a: Product, b: Product) => b.menuItemID - a.menuItemID);
+            console.log(data);
+            //Hiện sản phẩm
+            setProducts(sortedData)
 
-            } catch (err) {
-                console.error(err);
-            }
-        };
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
-        useEffect(() => {
-            fetchProducts();
-        }, []);
+    useEffect(() => {
+        fetchProducts();
+    }, []);
 
     //Hàm để thêm sản phẩm mới vào danh sách
     const handleAddProduct = (newProduct: Product) => {
-        setProducts((prevProducts) => [newProduct,...prevProducts]);
+        setProducts((prevProducts) => [newProduct, ...prevProducts]);
     };
 
     const handleEditProduct = (updatedProduct: Product) => {
         setEditedProduct(updatedProduct);
-        setProducts((prevProducts) => 
-            prevProducts.map(product => 
+        setProducts((prevProducts) =>
+            prevProducts.map(product =>
                 product.menuItemID === updatedProduct.menuItemID ? updatedProduct : product
             )
         );
@@ -82,102 +83,123 @@ const ProductTable: React.FC = () => {
             buttonsStyling: false,
         });
 
-        if(result.isConfirmed){
-                    try {
-            const response = await fetch(`${API_Url}/deleteMenuItem/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                },
-            });
-            if (response.status === 204) {
-                Swal.fire(`Xóa sản phẩm '${itemName}' thành công!`, 'success');
-                setProducts(products.filter(product => product.menuItemID !== id)); // Update UI
-            } else {
-                Swal.fire(`Xóa sản phẩm '${itemName}' thất bại!`, 'error');
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`${API_Url}/deleteMenuItem/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*',
+                    },
+                });
+                if (response.status === 204) {
+                    Swal.fire(`Xóa sản phẩm '${itemName}' thành công!`, 'success');
+                    setProducts(products.filter(product => product.menuItemID !== id)); // Update UI
+                } else {
+                    Swal.fire(`Xóa sản phẩm '${itemName}' thất bại!`, 'error');
+                }
+            } catch (error) {
+                console.error("Error deleting product:", error);
             }
-        } catch (error) {
-            console.error("Error deleting product:", error);
         }
-    }
-};
+    };
 
-        // Tính toán phân trang
-        const indexOfLastProduct = currentPage * itemsPerPage;
-        const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
-        const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
-        const pageCount = Math.ceil(products.length / itemsPerPage);
-    
-        const handlePageChange = (event: React.ChangeEvent<unknown>, value: number): void => {
-            setCurrentPage(value);
-        };
+
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(event.target.value);
+    }
+
+    const filteredCategories = products.filter(product =>
+        product.itemName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+
+    // Tính toán phân trang
+    const indexOfLastProduct = currentPage * itemsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+    const currentProducts = filteredCategories.slice(indexOfFirstProduct, indexOfLastProduct);
+    const pageCount = Math.ceil(filteredCategories.length / itemsPerPage);
+
+    const handlePageChange = (event: React.ChangeEvent<unknown>, value: number): void => {
+        setCurrentPage(value);
+    };
 
 
     return (
         <>
-        <div className="row element-button">
-            <AddProduct onAddProduct={handleAddProduct} />
-        </div>
-        <table className="table table-hover table-bordered" id="sampleTable">
-            <thead>
-                <tr>
-                    <th>STT</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Ảnh</th>
-                    <th>Danh mục</th>
-                    <th>Mô tả</th>
-                    <th style={{ width: "120px" }}>Tình trạng</th>
-                    <th style={{ width: "120px" }}>Trạng thái</th>
-                    <th style={{ width: "150px" }} >Chức năng</th>
-                </tr>
-            </thead>
-            <tbody>
-                {currentProducts.map((product, index) => (
-                    <tr key={product.menuItemID}>
-                        <td>
-                            {index + 1}
-                        </td>
-                        <td>{product.itemName}</td>
-                        <td>
-                            <img src={`${API_UrlImage}/${product.itemImage}`} alt="" width="100px;" />
-                        </td>
-                        <td>{product.menuID}</td>
-                        <td>{product.description}</td>
-                        <td>
-                            <Chip 
-                                label={product.statusToday === 'inStock' ? 'Còn hàng' : 'Hết hàng'}
-                                color={product.statusToday === 'inStock' ? 'success' : 'warning'}
-                            />
-                        </td>
-                        <td>
-                            <Chip 
-                                label={product.status === 'display' ? 'Hiện' : 'Ẩn'}
-                                color={product.status === 'display' ? 'success' : 'warning'}
-                            />
-                        </td>
-                        <td>
-                            <button style={{ marginRight: '5px' }}
-                                className="btn btn-danger btn-sm trash"
-                                type="button"
-                                title="Xóa"
-                                onClick={() => deleteProduct(product.menuItemID, product.itemName)}
-                            >
-                                <i className="fas fa-trash-alt" />
-                            </button>
-                            <EditProduct productID={product.menuItemID} onEditProduct={handleEditProduct}/>
-                            <ProductVariant productID={product.menuItemID} updatedProduct={editedProduct} />
-                        </td>
+            <div style={{ display: 'flex' }} className="row element-button">
+                <AddProduct onAddProduct={handleAddProduct} />
+                <TextField
+                    variant="outlined"
+                    size="small" // Làm cho TextField nhỏ hơn
+                    value={searchQuery}
+                    onChange={handleSearch}
+                    sx={{ width: 200, mb: 2, left: '545px' }}
+                    placeholder="Tìm kiếm..."
+                />
+            </div>
+
+
+
+            <table className="table table-hover table-bordered" id="sampleTable">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Ảnh</th>
+                        <th>Danh mục</th>
+                        <th>Mô tả</th>
+                        <th style={{ width: "120px" }}>Tình trạng</th>
+                        <th style={{ width: "120px" }}>Trạng thái</th>
+                        <th style={{ width: "150px" }} >Chức năng</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {currentProducts.map((product, index) => (
+                        <tr key={product.menuItemID}>
+                            <td>
+                                {index + 1}
+                            </td>
+                            <td>{product.itemName}</td>
+                            <td>
+                                <img src={`${API_UrlImage}/${product.itemImage}`} alt="" width="100px;" />
+                            </td>
+                            <td>{product.menuID}</td>
+                            <td>{product.description}</td>
+                            <td>
+                                <Chip
+                                    label={product.statusToday === 'inStock' ? 'Còn hàng' : 'Hết hàng'}
+                                    color={product.statusToday === 'inStock' ? 'success' : 'warning'}
+                                />
+                            </td>
+                            <td>
+                                <Chip
+                                    label={product.status === 'display' ? 'Hiện' : 'Ẩn'}
+                                    color={product.status === 'display' ? 'success' : 'warning'}
+                                />
+                            </td>
+                            <td>
+                                <button style={{ marginRight: '5px' }}
+                                    className="btn btn-danger btn-sm trash"
+                                    type="button"
+                                    title="Xóa"
+                                    onClick={() => deleteProduct(product.menuItemID, product.itemName)}
+                                >
+                                    <i className="fas fa-trash-alt" />
+                                </button>
+                                <EditProduct productID={product.menuItemID} onEditProduct={handleEditProduct} />
+                                <ProductVariant productID={product.menuItemID} updatedProduct={editedProduct} />
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
             <Pagination
                 count={pageCount}
                 variant="outlined"
                 page={currentPage}
                 onChange={handlePageChange}
-                sx={{display: 'flex', justifyContent: 'center', mt: 2}}
+                sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
             />
         </>
     )

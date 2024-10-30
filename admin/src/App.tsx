@@ -8,6 +8,7 @@ import ProductPage from './Pages/ProductPage'
 import CategoryPage from './Pages/CategoryPage'
 import UserPage from './Pages/UserPage'
 import StaffPage from './Pages/StaffPage'
+import VoucherPage from './Pages/VoucherPage'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path='/category' element={<CategoryPage />} />
           <Route path='/customer' element={<UserPage />} />
           <Route path='/staff' element={<StaffPage />} />
+          <Route path='/voucher' element={<VoucherPage />} />
         </Routes>
         <Footer />
       </Router>
