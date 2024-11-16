@@ -4,7 +4,8 @@ import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
 import ProductVariant from "./ProductVariant";
 import Swal from "sweetalert2";
-import { Chip, Pagination, TextField } from "@mui/material";
+import { Chip, Paper } from "@mui/material";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 interface Product {
     menuItemID: number;
@@ -19,12 +20,15 @@ interface Product {
     menuID: number;
 }
 
+interface Category {
+    menuID: number,
+    menuName: string,
+}
+
 const ProductTable: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [editedProduct, setEditedProduct] = useState<Product>();
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [searchQuery, setSearchQuery] = useState<string>('');
-    const itemsPerPage = 5;
 
     const fetchProducts = async () => {
         try {
@@ -47,8 +51,30 @@ const ProductTable: React.FC = () => {
         }
     };
 
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch(`${API_Url}/getMenus`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                },
+            });
+            const data: Category[] = await response.json();
+            //Sắp xếp sản phẩm mới thêm sẽ nằm ở đầu bảng
+            const sortedData = data.sort((a, b) => b.menuID - a.menuID);
+            console.log(data);
+            //Hiện sản phẩm
+            setCategories(sortedData)
+
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     useEffect(() => {
         fetchProducts();
+        fetchCategories()
     }, []);
 
     //Hàm để thêm sản phẩm mới vào danh sách
@@ -104,103 +130,108 @@ const ProductTable: React.FC = () => {
         }
     };
 
+    const MenuMap = new Map(categories.map((c) => [String(c.menuID), c.menuName]))
 
-    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
-    }
+    const columns: GridColDef[] = [
+        { field: 'id', headerName: 'STT', width: 70 },
+        { field: 'itemName', headerName: 'Tên sản phẩm', width: 150 },
+        {
+            field: 'itemImage',
+            headerName: 'Ảnh',
+            width: 100,
+            renderCell: (params) => (
+                params.value ? <img src={`${API_UrlImage}/${params.value}`} alt="" width="60" /> : null
+            )
+        },
+        { 
+            field: 'menuID', 
+            headerName: 'Danh mục', 
+            width: 100, 
+            renderCell: (params) => MenuMap.get(params.value)
+        },
+        { field: 'description', headerName: 'Mô tả', width: 160 },
+        {
+            field: 'statusToday',
+            headerName: 'Tình trạng',
+            width: 120,
+            renderCell: (params) => (
+                <Chip
+                    label={params.value === 'inStock' ? 'Còn hàng' : 'Hết hàng'}
+                    color={params.value === 'inStock' ? 'success' : 'warning'}
+                />
+            ),
+        },
+        {
+            field: 'status',
+            headerName: 'Trạng thái',
+            width: 110,
+            renderCell: (params) => (
+                <Chip
+                    label={params.value === 'display' ? 'Hiện' : 'Ẩn'}
+                    color={params.value === 'display' ? 'success' : 'warning'}
+                />
+            ),
+        },
+        {
+            field: 'actions',
+            headerName: 'Chức năng',
+            width: 150,
+            renderCell: (params) => (
+                <>
+                    <button
+                        className="btn btn-danger btn-sm trash"
+                        style={{ marginRight: '8px' }}
+                        onClick={() => deleteProduct(params.row.menuItemID, params.row.itemName)}
+                    >
+                        <i className="fas fa-trash-alt" />
+                    </button>
+                    <EditProduct
+                        productID={params.row.menuItemID}
+                        onEditProduct={handleEditProduct}
+                    />
+                    <ProductVariant
+                        productID={params.row.menuItemID}
+                        updatedProduct={editedProduct}
+                    />
+                </>
 
-    const filteredCategories = products.filter(product =>
-        product.itemName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+            )
+        }
+    ];
 
+    const rows = products.map((product, index) => ({
+        id: index + 1,
+        ...product
+    }));
 
-    // Tính toán phân trang
-    const indexOfLastProduct = currentPage * itemsPerPage;
-    const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
-    const currentProducts = filteredCategories.slice(indexOfFirstProduct, indexOfLastProduct);
-    const pageCount = Math.ceil(filteredCategories.length / itemsPerPage);
-
-    const handlePageChange = (event: React.ChangeEvent<unknown>, value: number): void => {
-        setCurrentPage(value);
-    };
-
+    const paginationModel = { page: 0, pageSize: 5 };
 
     return (
         <>
             <div style={{ display: 'flex' }} className="row element-button">
                 <AddProduct onAddProduct={handleAddProduct} />
-                <TextField
+                {/* <TextField
                     variant="outlined"
                     size="small" // Làm cho TextField nhỏ hơn
                     value={searchQuery}
                     onChange={handleSearch}
                     sx={{ width: 200, mb: 2, left: '545px' }}
                     placeholder="Tìm kiếm..."
-                />
+                /> */}
             </div>
 
 
 
-            <table className="table table-hover table-bordered" id="sampleTable">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Tên sản phẩm</th>
-                        <th>Ảnh</th>
-                        <th>Danh mục</th>
-                        <th>Mô tả</th>
-                        <th style={{ width: "120px" }}>Tình trạng</th>
-                        <th style={{ width: "120px" }}>Trạng thái</th>
-                        <th style={{ width: "150px" }} >Chức năng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {currentProducts.map((product, index) => (
-                        <tr key={product.menuItemID}>
-                            <td>
-                                {index + 1}
-                            </td>
-                            <td>{product.itemName}</td>
-                            <td>
-                                <img src={`${API_UrlImage}/${product.itemImage}`} alt="" width="100px;" />
-                            </td>
-                            <td>{product.menuID}</td>
-                            <td>{product.description}</td>
-                            <td>
-                                <Chip
-                                    label={product.statusToday === 'inStock' ? 'Còn hàng' : 'Hết hàng'}
-                                    color={product.statusToday === 'inStock' ? 'success' : 'warning'}
-                                />
-                            </td>
-                            <td>
-                                <Chip
-                                    label={product.status === 'display' ? 'Hiện' : 'Ẩn'}
-                                    color={product.status === 'display' ? 'success' : 'warning'}
-                                />
-                            </td>
-                            <td>
-                                <button style={{ marginRight: '5px' }}
-                                    className="btn btn-danger btn-sm trash"
-                                    type="button"
-                                    title="Xóa"
-                                    onClick={() => deleteProduct(product.menuItemID, product.itemName)}
-                                >
-                                    <i className="fas fa-trash-alt" />
-                                </button>
-                                <EditProduct productID={product.menuItemID} onEditProduct={handleEditProduct} />
-                                <ProductVariant productID={product.menuItemID} updatedProduct={editedProduct} />
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <Pagination
-                count={pageCount}
-                variant="outlined"
-                page={currentPage}
-                onChange={handlePageChange}
-                sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
-            />
+            <Paper sx={{ height: 400, width: '100%' }}>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    initialState={{ pagination: { paginationModel } }}
+                    pageSizeOptions={[5, 10, 20, 30, 100]}
+                    sx={{ border: 0 }}
+                    rowHeight={80}
+                />
+            </Paper>
         </>
     )
 };

@@ -1,9 +1,11 @@
 import { API_Url, API_UrlImage } from "../../../tsconfig.json"
 import React, { useEffect, useState } from "react";
 // import Swal from "sweetalert2";
-import { Alert, Chip, Snackbar, SnackbarCloseReason } from "@mui/material";
+import { Alert, Chip, Paper, Snackbar, SnackbarCloseReason } from "@mui/material";
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+
 interface Customer {
     customerID: number,
     name: string,
@@ -75,7 +77,7 @@ const UserTable: React.FC = () => {
                     ? { ...cust, status: newStatus }
                     : cust
                 ));
-                
+
                 setOpenAlert(true);
             } else {
                 alert('thất bại');
@@ -86,55 +88,69 @@ const UserTable: React.FC = () => {
         }
     }
 
+    const columns: GridColDef[] = [
+        { field: 'id', headerName: 'STT', width: 120 },
+        { field: 'name', headerName: 'Tên khách hàng', width: 180 },
+        {
+            field: 'avatar',
+            headerName: 'Ảnh',
+            width: 110,
+            renderCell: (params) => (
+                params.value ? <img src={`${API_UrlImage}/${params.value}`} alt="" width="60" /> : null
+            )
+        },
+        { field: 'email', headerName: 'Email', width: 160 },
+        { field: 'phoneNumber', headerName: 'Số điện thoại', width: 110 },
+        {
+            field: 'status',
+            headerName: 'Trạng thái',
+            width: 160,
+            renderCell: (params) => (
+                <Chip
+                    label={params.value === 'active' ? 'Hoạt động' : 'Bị Khóa'}
+                    color={params.value === 'active' ? 'success' : 'warning'}
+                    sx={{ width: 110 }}
+                />
+            )
+        },
+        {
+            field: 'actions',
+            headerName: 'Chức năng',
+            width: 120,
+            renderCell: (params) => (
+                <>
+                    <button style={{ marginRight: '5px' }}
+                        className={params.row.status === 'active' ? 'btn btn-primary btn-sm trash' : 'btn btn-danger btn-sm trash'}
+                        type="button"
+                        title={params.row.status === 'active' ? 'Mở Khóa' : 'Đóng Khóa'}
+                        onClick={() => toggleStatus(params.row)}
+                    >
+                        {params.row.status === 'active' ? <LockOpenIcon /> : <LockIcon />}
+                    </button>
+                </>
+            )
+        }
+    ];
+
+    const rows = customers.map((customer, index) => ({
+        id: index + 1,
+        ...customer
+    }));
+
+    const paginationModel = { page: 0, pageSize: 5 };
+
     return (
         <>
-            <div className="row element-button">
-                {/* <AddProduct onAddProduct={handleAddProduct} /> */}
-            </div>
-            <table className="table table-hover table-bordered" id="sampleTable">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Tên khách hàng</th>
-                        <th>Ảnh</th>
-                        <th>Email</th>
-                        <th>SDT</th>
-                        <th>Trạng thái</th>
-                        <th style={{ width: "120px" }} >Chức năng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {customers.map((customer, index) => (
-                        <tr key={customer.customerID}>
-                            <td>
-                                {index + 1}
-                            </td>
-                            <td>{customer.name}</td>
-                            <td>
-                                <img src={`${API_UrlImage}/${customer.avatar}`} alt="" width="100px;" />
-                            </td>
-                            <td>{customer.email}</td>
-                            <td>{customer.phoneNumber}</td>
-                            <td>
-                                <Chip sx={{ width: 100 }}
-                                    label={customer.status === 'active' ? 'Active' : 'Blocked'}
-                                    color={customer.status === 'active' ? 'success' : 'warning'}
-                                />
-                            </td>
-                            <td>
-                                <button style={{ marginRight: '5px' }}
-                                    className={customer.status === 'active' ? 'btn btn-primary btn-sm trash' : 'btn btn-danger btn-sm trash'}
-                                    type="button"
-                                    title={customer.status === 'active' ? 'Mở Khóa' : 'Đóng Khóa'}
-                                    onClick={() => toggleStatus(customer)}
-                                >
-                                    {customer.status === 'active' ? <LockOpenIcon /> : <LockIcon />}
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <Paper sx={{ height: 400, width: '100%' }}>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    initialState={{ pagination: { paginationModel } }}
+                    pageSizeOptions={[5, 10, 20, 30, 100]}
+                    sx={{ border: 0 }}
+                    rowHeight={80}
+                />
+            </Paper>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
                 <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
                     Đổi trạng thái thành công !

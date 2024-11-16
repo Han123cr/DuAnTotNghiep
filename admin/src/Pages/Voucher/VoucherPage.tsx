@@ -1,5 +1,6 @@
-import { HeaderNav, HeaderUl } from "./Header";
-import Clock from "../Components/Clock"
+import { HeaderNav, HeaderUl } from "../Header";
+import VoucherTable from "../../Components/Voucher/VoucherTable";
+import Clock from "../../Components/Clock";
 const VoucherPage = () => {
     return (
         <>
@@ -22,7 +23,7 @@ const VoucherPage = () => {
                                     <ul className="app-breadcrumb breadcrumb">
                                         <li className="breadcrumb-item">
                                             <a href="#">
-                                                <b>Quản lý đánh giá</b>
+                                                <b>Quản lý ưu đãi</b>
                                             </a>
                                         </li>
                                     </ul>
@@ -33,7 +34,7 @@ const VoucherPage = () => {
                                             <div className="col-md-12">
                                                 <div className="tile">
                                                     <div className="tile-body">
-                                                        {/* <UserTable/> */}
+                                                        <VoucherTable/>
                                                     </div>
                                                 </div>
                                             </div>

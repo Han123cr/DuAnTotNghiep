@@ -1,24 +1,31 @@
 // import { useEffect } from 'react';
 // import '/public/js/sb-admin-2'
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faBagShopping, faCircleExclamation} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBagShopping, faCircleExclamation } from '@fortawesome/free-solid-svg-icons'
 import Clock from '../Components/Clock'
 import { HeaderUl, HeaderNav } from './Header'
+import LineChart from '../Components/LineChart'
+// import { API_Url } from "../../../tsconfig.json"
 
 const Home = () => {
+
+  const labels = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'];
+  const data = [65, 59, 80, 81, 56, 55];
+  const title = 'Khách hàng';
+
   return (
     <div id="page-top">
       {/* Page Wrapper */}
       <div id="wrapper">
         {/* Sidebar */}
-        <HeaderUl/>
+        <HeaderUl />
         {/* End of Sidebar */}
         {/* Content Wrapper */}
         <div id="content-wrapper" className="d-flex flex-column">
           {/* Main Content */}
           <div id="content">
             {/* Topbar */}
-            <HeaderNav/>
+            <HeaderNav />
             {/* End of Topbar */}
             {/* Begin Page Content */}
             <div className="container-fluid">
@@ -92,7 +99,7 @@ const Home = () => {
                 <div className="col-xl-3 col-md-6 mb-4 mb-6">
                   <div className="card border-left-secondary shadow h-100 py-2">
                     <div className="col-auto fixicon">
-                    <FontAwesomeIcon className="fa-2x" icon={faBagShopping } style={{color: '#FF8B07'}} />
+                      <FontAwesomeIcon className="fa-2x" icon={faBagShopping} style={{ color: '#FF8B07' }} />
                     </div>
                     <div className="card-body">
                       <div className="row no-gutters align-items-center">
@@ -116,7 +123,7 @@ const Home = () => {
                 <div className="col-xl-3 col-md-6 mb-4 mb-6">
                   <div className="card border-left-danger shadow h-100 py-2">
                     <div className="col-auto fixicon">
-                    <FontAwesomeIcon className='fa-2x' icon={faCircleExclamation} style={{color: '#DE2222'}} />
+                      <FontAwesomeIcon className='fa-2x' icon={faCircleExclamation} style={{ color: '#DE2222' }} />
                     </div>
                     <div className="card-body">
                       <div className="row no-gutters align-items-center">
@@ -144,7 +151,7 @@ const Home = () => {
                       {/* Card Header - Dropdown */}
                       <div className="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                         <h6 className="m-0 font-weight-bold text-primary">
-                          Earnings Overview
+                          Thống kê khách hàng
                         </h6>
                         <div className="dropdown no-arrow">
                           <a
@@ -179,7 +186,7 @@ const Home = () => {
                       {/* Card Body */}
                       <div className="card-body">
                         <div className="chart-area">
-                          <canvas id="myAreaChart" />
+                          <LineChart labels={labels} data={data} title={title} />
                         </div>
                       </div>
                     </div>

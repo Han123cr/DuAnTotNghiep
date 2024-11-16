@@ -10,9 +10,10 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect } from 'react';
 import { API_Url } from "../../../tsconfig.json"
-import { Alert, Chip, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Snackbar, SnackbarCloseReason } from "@mui/material";
+import { Alert, Chip, FormControl, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, Snackbar, SnackbarCloseReason } from "@mui/material";
 import AddStaff from "./AddStaff";
 import EditStaff from "./EditStaff";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 interface Staff {
     adminID: string,
@@ -135,11 +136,75 @@ const StaffTable: React.FC = () => {
         fetchAdmin(branch);
     };
 
+    const columns: GridColDef[] = [
+        { field: 'id', headerName: 'Mã nhân viên', width: 110 },
+        { field: 'name', headerName: 'Tên nhân viên', width: 160 },
+        {
+            field: 'avatar',
+            headerName: 'Ảnh',
+            width: 100,
+            renderCell: (params) => (
+                params.value ? <img src={`${API_UrlImage}/${params.value}`} alt="" width="60" /> : null
+            )
+        },
+        { field: 'email', headerName: 'Email', width: 150 },
+        { field: 'phoneNumber', headerName: 'Số điện thoại', width: 120 },
+        {
+            field: 'status',
+            headerName: 'Trạng thái',
+            width: 140,
+            renderCell: (params) => (
+                <Chip
+                    label={params.value === 'active' ? 'Hoạt động' : 'BỊ khóa'}
+                    color={params.value === 'active' ? 'success' : 'warning'}
+                    sx={{ width: 110 }}
+                />
+            )
+        },
+        { 
+            field: 'role', 
+            headerName: 'Chức vụ', 
+            width: 100, 
+            renderCell: (params) => params.value === 'staff' ? 'Nhân viên' : 'Quản lý'
+        },
+        { 
+            field: 'branchID', 
+            headerName: 'Cơ sở', 
+            width: 100,
+            renderCell: (params) => params.value === 'svr1' ? 'Savory I' : 'Savory II'
+        },
+        {
+            field: 'actions',
+            headerName: 'Chức năng',
+            width: 120,
+            renderCell: (params) => (
+                <>
+                    <button style={{ marginRight: 10 }}
+                        className="btn btn-warning btn-sm edit"
+                        type="button"
+                        title="Chi tiết"
+                        onClick={() => handleClickOpen(params.row.adminID)}
+                    >
+                        <i className="fa-solid fa-bars"></i>
+                    </button>
+                    <EditStaff adminID={params.row.adminID} branch={params.row.branchID} onEditStaff={handleEditStaff} />
+                </>
+            )
+        }
+    ];
+
+    const rows = admins.map((admin) => ({
+        id: admin.adminID,
+        ...admin
+    }));
+
+    const paginationModel = { page: 0, pageSize: 5 };
+
     return (
         <>
             <div style={{ display: 'flex' }}>
                 <AddStaff onAddStaff={handleAddStaff} />
-                <FormControl sx={{bottom: '2px', marginBottom: '10px', minWidth: 130 }} size="small">
+                <FormControl sx={{ bottom: '2px', marginBottom: '10px', minWidth: 130 }} size="small">
                     <InputLabel id="demo-simple-select-label">Cơ sở</InputLabel>
                     <Select
                         labelId="demo-simple-select-label"
@@ -154,10 +219,18 @@ const StaffTable: React.FC = () => {
                 </FormControl>
             </div>
 
-            <div className="row element-button">
-                {/* <AddProduct onAddProduct={handleAddProduct} /> */}
-            </div>
-            <table className="table table-hover table-bordered" id="sampleTable">
+            <Paper sx={{ height: 400, width: '100%' }}>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    initialState={{ pagination: { paginationModel } }}
+                    pageSizeOptions={[5, 10, 20, 30, 100]}
+                    sx={{ border: 0 }}
+                    rowHeight={80}
+                />
+            </Paper>
+
+            {/* <table className="table table-hover table-bordered" id="sampleTable">
                 <thead>
                     <tr>
                         <th>Mã nhân viên</th>
@@ -172,7 +245,7 @@ const StaffTable: React.FC = () => {
                 </thead>
                 <tbody>
                     {admins.map((admin) => (
-                        <tr 
+                        <tr
                             key={admin.adminID}
                             className={admin.status === 'blocked' ? 'blocked-row' : ''}
                         >
@@ -193,14 +266,14 @@ const StaffTable: React.FC = () => {
                                     color={admin.status === 'active' ? 'success' : 'error'}
                                 />
                                 {admin.status === 'blocked' && (
-                                    <div style={{fontSize: '15px'}}>Ngày Khóa: {admin.dayEnd}</div>
+                                    <div style={{ fontSize: '15px' }}>Ngày Khóa: {admin.dayEnd}</div>
                                 )}
-                                
+
                             </td>
                             <td>{admin.role}</td>
                             <td>{admin.branchID === 'svr1' ? 'Savory I' : 'Savory II'}</td>
                             <td>
-                                <button style={{marginRight: 10}}
+                                <button style={{ marginRight: 10 }}
                                     className="btn btn-warning btn-sm edit"
                                     type="button"
                                     title="Chi tiết"
@@ -213,7 +286,7 @@ const StaffTable: React.FC = () => {
                         </tr>
                     ))}
                 </tbody>
-            </table>
+            </table> */}
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
                 <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
                     Đổi trạng thái thành công !

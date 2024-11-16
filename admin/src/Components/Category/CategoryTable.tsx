@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import AddCategory from "./AddCategory";
 import EditCategory from "./EditCategory";
 import Swal from "sweetalert2";
-import { Chip, Pagination, TextField } from "@mui/material";
+import { Chip, Paper } from "@mui/material";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 interface Category {
     menuID: number,
@@ -14,9 +15,6 @@ interface Category {
 
 const CategoryTable: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [searchQuery, setSearchQuery] = useState<string>('');
-    const itemsPerPage = 5;
 
     const fetchCategories = async () => {
         try {
@@ -93,89 +91,80 @@ const CategoryTable: React.FC = () => {
         }
     };
 
-    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
-    }
+    const columns: GridColDef[] = [
+        { field: 'id', headerName: 'STT', width: 120 },
+        { field: 'menuName', headerName: 'Tên danh mục', width: 365 },
+        {
+            field: 'menuImage',
+            headerName: 'Ảnh',
+            width: 180,
+            renderCell: (params) => (
+                params.value ? <img src={`${API_UrlImage}/${params.value}`} alt="" width="60" /> : null
+            )
+        },
+        {
+            field: 'status',
+            headerName: 'Trạng thái',
+            width: 180,
+            renderCell: (params) => (
+                <Chip
+                    label={params.value === 'display' ? 'Hiện' : 'Ẩn'}
+                    color={params.value === 'display' ? 'success' : 'warning'}
+                    sx={{ width: 80 }}
+                />
+            )
+        },
+        {
+            field: 'actions',
+            headerName: 'Chức năng',
+            width: 120,
+            renderCell: (params) => (
+                <>
+                    <button style={{ marginRight: '5px' }}
+                        className="btn btn-danger btn-sm trash"
+                        type="button"
+                        title="Xóa"
+                        onClick={() => deleteCategory(params.row.menuID, params.row.menuName)}
+                    >
+                        <i className="fas fa-trash-alt" />
+                    </button>
+                    <EditCategory categoryID={params.row.menuID} onEditCategory={handleEditCategory} />
+                </>
+            )
+        }
+    ];
 
-    const filteredCategories = categories.filter(category =>
-        category.menuName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const rows = categories.map((category, index) => ({
+        id: index + 1,
+        ...category
+    }));
 
-    // Tính toán phân trang
-    const indexOfLastCategory = currentPage * itemsPerPage;
-    const indexOfFirstCategory = indexOfLastCategory - itemsPerPage;
-    const currentCategories = filteredCategories.slice(indexOfFirstCategory, indexOfLastCategory);
-    const pageCount = Math.ceil(filteredCategories.length / itemsPerPage);
-
-    const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number): void => {
-        setCurrentPage(value);
-    };
+    const paginationModel = { page: 0, pageSize: 5 };
 
     return (
         <>
             <div style={{ display: 'flex' }}>
                 <AddCategory onAddCategory={handleAddCategory} />
-                <TextField
+                {/* <TextField
                     variant="outlined"
                     size="small" // Làm cho TextField nhỏ hơn
                     value={searchQuery}
                     onChange={handleSearch}
                     sx={{ width: 200, mb: 2, left: '540px' }}
                     placeholder="Tìm kiếm..."
-                />
+                /> */}
             </div>
 
-            <div className="row element-button">
-                {/* <AddProduct onAddProduct={handleAddProduct} /> */}
-            </div>
-            <table className="table table-hover table-bordered" id="sampleTable">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Tên danh mục</th>
-                        <th>Ảnh</th>
-                        <th>Trạng thái</th>
-                        <th style={{ width: "120px" }} >Chức năng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {currentCategories.map((category, index) => (
-                        <tr key={category.menuID}>
-                            <td>
-                                {index + 1}
-                            </td>
-                            <td>{category.menuName}</td>
-                            <td>
-                                <img src={`${API_UrlImage}/${category.menuImage}`} alt="" width="100px;" />
-                            </td>
-                            <td>
-                                <Chip sx={{ width: 100 }}
-                                    label={category.status === 'display' ? 'Hiện' : 'Ẩn'}
-                                    color={category.status === 'display' ? 'success' : 'warning'}
-                                />
-                            </td>
-                            <td>
-                                <button style={{ marginRight: '5px' }}
-                                    className="btn btn-primary btn-sm trash"
-                                    type="button"
-                                    title="Xóa"
-                                    onClick={() => deleteCategory(category.menuID, category.menuName)}
-                                >
-                                    <i className="fas fa-trash-alt" />
-                                </button>
-                                <EditCategory categoryID={category.menuID} onEditCategory={handleEditCategory} />
-                                {/* <EditProduct productID={product.menuItemID} onEditProduct={handleEditProduct}/> */}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <Pagination
-                count={pageCount}
-                page={currentPage}
-                onChange={handlePageChange}
-                sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
-            />
+            <Paper sx={{ height: 400, width: '100%' }}>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    initialState={{ pagination: { paginationModel } }}
+                    pageSizeOptions={[5, 10, 20, 30, 100]}
+                    sx={{ border: 0 }}
+                    rowHeight={80}
+                />
+            </Paper>
         </>
     )
 };

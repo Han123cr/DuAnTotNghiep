@@ -86,7 +86,7 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 0.5rem;
 }
 
-p {
+p1 {
   margin-top: 0;
   margin-bottom: 1rem;
 }
@@ -1525,6 +1525,7 @@ pre code {
 .table-bordered thead td {
   border-bottom-width: 2px;
   color: #52575C;
+  padding: 10px;
 }
 
 .table-borderless th,
@@ -4529,6 +4530,18 @@ input[type="button"].btn-block {
 .card-body {
   flex: 1 1 auto;
   min-height: 1px;
+  padding: 1.25rem;
+}
+
+.voucher1 {
+  flex: 1 1 auto;
+  height: 390px;
+  padding: 1.25rem;
+}
+
+.voucher2 {
+  flex: 1 1 auto;
+  height: 410px;
   padding: 1.25rem;
 }
 
@@ -11429,4 +11442,25 @@ body.sidebar-toggled footer.sticky-footer {
 .blocked-row{
   opacity: 0.6;
   pointer-events: none;
+}
+
+/* CSS for the image and resize handle */
+.resizable-image {
+  position: relative;
+  display: inline-block;
+}
+
+.resize-handle {
+  width: 10px;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize; /* Resize cursor */
+}
+
+.cancelled-row {
+  opacity: 0.5;
+  pointer-events: none; /* Không cho phép tương tác */
 }

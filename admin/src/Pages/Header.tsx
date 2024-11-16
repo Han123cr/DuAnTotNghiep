@@ -75,10 +75,10 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Đơn hàng</div>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <a className="nav-link" href="#">
+          <Link to="/oders" className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý đơn đặt hàng</span>
-          </a>
+          </Link>
         </li>
         {/* Divider */}
         <hr className="sidebar-divider" />

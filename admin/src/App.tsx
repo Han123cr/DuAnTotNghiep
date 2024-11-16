@@ -8,7 +8,10 @@ import ProductPage from './Pages/ProductPage'
 import CategoryPage from './Pages/CategoryPage'
 import UserPage from './Pages/UserPage'
 import StaffPage from './Pages/StaffPage'
-import VoucherPage from './Pages/VoucherPage'
+import OdersPage from './Pages/OdersPage'
+import VoucherPage from './Pages/Voucher/VoucherPage'
+import AddVoucherPage from './Pages/Voucher/AddVoucherPage'
+import EditVoucherPage from './Pages/Voucher/EditVoucherPage'
 
 function App() {
   return (
@@ -21,7 +24,11 @@ function App() {
           <Route path='/category' element={<CategoryPage />} />
           <Route path='/customer' element={<UserPage />} />
           <Route path='/staff' element={<StaffPage />} />
+          {/* Voucher */}
           <Route path='/voucher' element={<VoucherPage />} />
+          <Route path='/addvoucher' element={<AddVoucherPage />} />
+          <Route path='/editvoucher/:voucherID' element={<EditVoucherPage />} />
+          <Route path='/oders' element={<OdersPage />} />
         </Routes>
         <Footer />
       </Router>
