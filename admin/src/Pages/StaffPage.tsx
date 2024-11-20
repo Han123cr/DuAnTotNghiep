@@ -23,7 +23,7 @@ const StaffPage = () => {
                                     <ul className="app-breadcrumb breadcrumb">
                                         <li className="breadcrumb-item">
                                             <a href="#">
-                                                <b>Quản lý nhân viên</b>
+                                                <b className='colorweb'>Quản lý nhân viên</b>
                                             </a>
                                         </li>
                                     </ul>

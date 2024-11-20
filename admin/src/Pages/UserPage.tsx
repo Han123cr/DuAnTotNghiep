@@ -23,7 +23,7 @@ const UserPage = () => {
                                     <ul className="app-breadcrumb breadcrumb">
                                         <li className="breadcrumb-item">
                                             <a href="#">
-                                                <b>Quản lý khách hàng</b>
+                                                <b className='colorweb'>Quản lý khách hàng</b>
                                             </a>
                                         </li>
                                     </ul>

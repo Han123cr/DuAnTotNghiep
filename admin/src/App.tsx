@@ -12,6 +12,7 @@ import OdersPage from './Pages/OdersPage'
 import VoucherPage from './Pages/Voucher/VoucherPage'
 import AddVoucherPage from './Pages/Voucher/AddVoucherPage'
 import EditVoucherPage from './Pages/Voucher/EditVoucherPage'
+import TableOrdersPage from './Pages/TableOrders/TableOrdersPage'
 
 function App() {
   return (
@@ -28,7 +29,8 @@ function App() {
           <Route path='/voucher' element={<VoucherPage />} />
           <Route path='/addvoucher' element={<AddVoucherPage />} />
           <Route path='/editvoucher/:voucherID' element={<EditVoucherPage />} />
-          <Route path='/oders' element={<OdersPage />} />
+          <Route path='/orders' element={<OdersPage />} />
+          <Route path='/tableorders' element={<TableOrdersPage />} />
         </Routes>
         <Footer />
       </Router>

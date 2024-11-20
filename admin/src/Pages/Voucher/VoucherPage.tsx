@@ -23,7 +23,7 @@ const VoucherPage = () => {
                                     <ul className="app-breadcrumb breadcrumb">
                                         <li className="breadcrumb-item">
                                             <a href="#">
-                                                <b>Quản lý ưu đãi</b>
+                                                <b className='colorweb'>Quản lý ưu đãi</b>
                                             </a>
                                         </li>
                                     </ul>

@@ -1,7 +1,11 @@
 import { Avatar } from '@mui/material'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import NotificationsIcon from '@mui/icons-material/Notifications';
+
 export const HeaderUl = () => {
+
+  const location = useLocation();
+
   return (
     <>
       <ul
@@ -19,26 +23,23 @@ export const HeaderUl = () => {
         <hr className="sidebar-divider" />
         {/* Heading */}
         <div className="sidebar-heading">Thống kê</div>
-        {/* Nav Item - Dashboard */}
-        <li className="nav-item active">
-          <Link to="/" className="nav-link">
+        {/* Thống kê báo cáo */}
+        <li className={`nav-item ${location.pathname === '/home' ? 'active' : ''}`}>
+          <Link to="/home" className="nav-link">
             <i className="fas fa-fw fa-tachometer-alt" />
             <span>Thống kê báo cáo</span>
           </Link>
         </li>
-        {/* Divider */}
         <hr className="sidebar-divider" />
-        {/* Heading */}
+        {/* Quản lý sản phẩm */}
         <div className="sidebar-heading">Sản phẩm</div>
-        {/* Nav Item - Pages Collapse Menu */}
-        <li className="nav-item">
+        <li className={`nav-item ${location.pathname === '/category' ? 'active' : ''}`}>
           <Link to="/category" className="nav-link">
             <i className="fas fa-fw fa-cog" />
             <span>Quản lý thực đơn</span>
           </Link>
         </li>
-        {/* Nav Item - Utilities Collapse Menu */}
-        <li className="nav-item">
+        <li className={`nav-item ${location.pathname === '/product' ? 'active' : ''}`}>
           <Link to='/product' className="nav-link">
             <i className="fas fa-fw fa-wrench" />
             <span>Quản lý món ăn</span>
@@ -46,53 +47,45 @@ export const HeaderUl = () => {
         </li>
         {/* Divider */}
         <hr className="sidebar-divider" />
-        {/* Heading */}
+        {/* Dịch vụ */}
         <div className="sidebar-heading">Dịch vụ</div>
-        {/* Nav Item - Pages Collapse Menu */}
-        <li className="nav-item">
-          <a className="nav-link" href="#">
+        <li className={`nav-item ${location.pathname === '/tableorders' ? 'active' : ''}`}>
+          <Link to='/tableorders' className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý đơn đặt bàn</span>
-          </a>
+          </Link>
         </li>
-        {/* Nav Item - Charts */}
         <li className="nav-item">
           <a className="nav-link" href="#">
             <i className="fas fa-fw fa-chart-area" />
             <span>Quản lý bàn</span>
           </a>
         </li>
-        {/* Nav Item - Tables */}
         <li className="nav-item">
           <a className="nav-link" href="#">
             <i className="fas fa-fw fa-table" />
             <span>Quản lý hóa đơn</span>
           </a>
         </li>
-        {/* Divider */}
         <hr className="sidebar-divider" />
-        {/* Heading */}
+        {/* Quản lý đơn hàng */}
         <div className="sidebar-heading">Đơn hàng</div>
-        {/* Nav Item - Pages Collapse Menu */}
-        <li className="nav-item">
-          <Link to="/oders" className="nav-link">
+        <li className={`nav-item ${location.pathname === '/orders' ? 'active' : ''}`}>
+          <Link to="/orders" className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý đơn đặt hàng</span>
           </Link>
         </li>
-        {/* Divider */}
         <hr className="sidebar-divider" />
-        {/* Heading */}
+        {/* Quản lý người dùng */}
         <div className="sidebar-heading">Người dùng</div>
-        {/* Nav Item - Pages Collapse Menu */}
-        <li className="nav-item">
+        <li className={`nav-item ${location.pathname === '/staff' ? 'active' : ''}`}>
           <Link to='/staff' className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý nhân viên</span>
           </Link>
         </li>
-        {/* Nav Item - Pages Collapse Menu */}
-        <li className="nav-item">
+        <li className={`nav-item ${location.pathname === '/customer' ? 'active' : ''}`}>
           <Link to='/customer' className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý khách hàng</span>
@@ -100,31 +93,26 @@ export const HeaderUl = () => {
         </li>
         {/* Divider */}
         <hr className="sidebar-divider" />
-        {/* Heading */}
+        {/* Quản lý đánh giá */}
         <div className="sidebar-heading">Đánh giá</div>
-        {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
           <a className="nav-link" href="#">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý đánh giá</span>
           </a>
         </li>
-        {/* Divider */}
         <hr className="sidebar-divider" />
-        {/* Heading */}
+        {/* Quản lý ưu đãi */}
         <div className="sidebar-heading">Ưu đãi</div>
-        {/* Nav Item - Pages Collapse Menu */}
-        <li className="nav-item">
+        <li className={`nav-item ${location.pathname === '/voucher' ? 'active' : ''}`}>
           <Link to="/voucher" className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý ưu đãi</span>
           </Link>
         </li>
-        {/* Divider */}
         <hr className="sidebar-divider" />
-        {/* Heading */}
+        {/* Quản lý thông tin */}
         <div className="sidebar-heading">Thông tin</div>
-        {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
           <a className="nav-link" href="#">
             <i className="fas fa-fw fa-folder" />

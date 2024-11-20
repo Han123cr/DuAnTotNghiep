@@ -24,7 +24,7 @@ const CategoryPage = () => {
                                     <ul className="app-breadcrumb breadcrumb">
                                         <li className="breadcrumb-item">
                                             <a href="#">
-                                                <b>Quản lý thực đơn</b>
+                                                <b className="colorweb">Quản lý thực đơn</b>
                                             </a>
                                         </li>
                                     </ul>

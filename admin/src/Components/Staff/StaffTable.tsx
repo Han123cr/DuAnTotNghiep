@@ -155,8 +155,8 @@ const StaffTable: React.FC = () => {
             width: 140,
             renderCell: (params) => (
                 <Chip
-                    label={params.value === 'active' ? 'Hoạt động' : 'BỊ khóa'}
-                    color={params.value === 'active' ? 'success' : 'warning'}
+                    label={params.value === 'active' ? 'Hoạt động' : 'Bị khóa'}
+                    color={params.value === 'active' ? 'success' : 'error'}
                     sx={{ width: 110 }}
                 />
             )
@@ -227,6 +227,10 @@ const StaffTable: React.FC = () => {
                     pageSizeOptions={[5, 10, 20, 30, 100]}
                     sx={{ border: 0 }}
                     rowHeight={80}
+                    getRowClassName={(params) => 
+                        params.row.status === 'blocked' ? 'cancelled-row' : ''
+                    }
+                    disableRowSelectionOnClick
                 />
             </Paper>
 

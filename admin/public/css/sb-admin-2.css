@@ -10597,9 +10597,10 @@ a:focus {
     width: 14rem;
   }
   .sidebar .nav-item .nav-link i {
-    font-size: 0.85rem;
+    font-size: 0.65rem;
     margin-right: 0.25rem;
   }
+
   .sidebar .nav-item .nav-link span {
     font-size: 0.85rem;
     display: inline;
@@ -10758,11 +10759,11 @@ a:focus {
 }
 
 .sidebar-dark .nav-item .nav-link {
-  color: #52575C;
+  color: #7d7e7f;
 }
 
 .sidebar-dark .nav-item .nav-link i {
-  color: #52575C;
+  color: #7d7e7f;
   padding-right: 25px;
 }
 
@@ -11463,4 +11464,8 @@ body.sidebar-toggled footer.sticky-footer {
 .cancelled-row {
   opacity: 0.5;
   pointer-events: none; /* Không cho phép tương tác */
+}
+
+.colorweb{
+  color: #0B3C5D;
 }

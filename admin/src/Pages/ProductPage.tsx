@@ -23,7 +23,7 @@ const ProductPage = () => {
                                     <ul className="app-breadcrumb breadcrumb">
                                         <li className="breadcrumb-item">
                                             <a href="#">
-                                                <b>Quản lý món ăn</b>
+                                                <b className='colorweb'>Quản lý món ăn</b>
                                             </a>
                                         </li>
                                     </ul>

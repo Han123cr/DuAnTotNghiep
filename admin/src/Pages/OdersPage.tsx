@@ -1,6 +1,6 @@
 import { HeaderNav, HeaderUl } from "./Header";
 import Clock from "../Components/Clock"
-import OrdersTable from "../Components/Oders/OrderTable";
+import Orders from "../Components/Orders/Orders";
 
 const OdersPage = () => {
     return (
@@ -24,7 +24,7 @@ const OdersPage = () => {
                                     <ul className="app-breadcrumb breadcrumb">
                                         <li className="breadcrumb-item">
                                             <a href="#">
-                                                <b>Quản lý đơn đặt hàng</b>
+                                                <b className='colorweb'>Quản lý đơn đặt hàng</b>
                                             </a>
                                         </li>
                                     </ul>
@@ -35,7 +35,7 @@ const OdersPage = () => {
                                             <div className="col-md-12">
                                                 <div className="tile">
                                                     <div className="tile-body">
-                                                        <OrdersTable/>
+                                                        <Orders/>
                                                     </div>
                                                 </div>
                                             </div>
