@@ -136,7 +136,7 @@ const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff }) =
 
     //Đóng mở alert
     const handleAlertClose = (
-        event?: React.SyntheticEvent | Event,
+        _event?: React.SyntheticEvent | Event,
         reason?: SnackbarCloseReason,
     ) => {
         if (reason === 'clickaway') {

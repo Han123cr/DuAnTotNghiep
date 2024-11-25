@@ -8,7 +8,6 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 // import AddIcon from '@mui/icons-material/Add';
-import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState, useEffect } from 'react';
@@ -22,7 +21,6 @@ interface MenuItem {
     price: number;
     discount: number;
     size: string;
-    statusToday: string;
     status: string;
     menuID: number;
     variants: Variant[];
@@ -44,6 +42,8 @@ interface Menu {
 interface EditProductProps {
     productID: number;
     onEditProduct: (updatedProduct: MenuItem) => void;
+    setOpenAlert: (open: boolean) => void; // Nhận hàm để cập nhật trạng thái alert
+    setAlertMessage: (message: string) => void; // Nhận hàm để cập nhật thông điệp
 }
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -55,14 +55,12 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) => {
+const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct, setOpenAlert, setAlertMessage }) => {
 
-    const [openAlert, setOpenAlert] = useState(false)
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
     const [status, setStatus] = React.useState('');
-    const [statusToday, setStatusToday] = React.useState('');
     const [itemName, setItemName] = useState('');
     const [description, setDescription] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
@@ -75,16 +73,16 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
     const [variants, setVariants] = useState<Variant[]>([]);
 
     //Load danh mục
-        const fetchMenus = async () => {
-            try {
-                const response = await fetch(`https://savory.website/api/admin/getMenus`);
-                const data: Menu[] = await response.json();
-                console.log(data);
-                setMenuData(data)
-            } catch (err) {
-                console.error(err);
-            }
-        };
+    const fetchMenus = async () => {
+        try {
+            const response = await fetch(`${API_Url}/getMenus`);
+            const data: Menu[] = await response.json();
+            console.log(data);
+            setMenuData(data)
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
 
     useEffect(() => {
@@ -96,7 +94,6 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                     setItemName(product.itemName);
                     setDescription(product.description);
                     setStatus(product.status);
-                    setStatusToday(product.statusToday);
                     setselectedMenu(product.menuID);
                     setFile(null)
 
@@ -178,13 +175,9 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
         }
     };
 
-    //Select status và statusToday
+    //Select status
     const handChangeStatus = (event: SelectChangeEvent) => {
         setStatus(event.target.value as string);
-    };
-
-    const handChangeStatusToday = (event: SelectChangeEvent) => {
-        setStatusToday(event.target.value as string);
     };
 
     const handChangeMenu = (event: SelectChangeEvent) => {
@@ -201,25 +194,20 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
         // resetForm();
     };
 
-    //Đóng mở alert
-
-    const handleAlertClose = (
-        event?: React.SyntheticEvent | Event,
-        reason?: SnackbarCloseReason,
-    ) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenAlert(false);
-    }
-
     const handleSubmit = async () => {
         let filteredVariants = variants;
 
-        if (selectedSizes.length === 1 && selectedSizes[0] !== 'S') {
+        const hasSelectedSizes = selectedSizes.length < 0;
+
+        // Nếu không có kích thước nào được chọn nhưng lại có biến thể 'basic'
+        if (!hasSelectedSizes && variants.some(variant => variant.size === 'basic')) {
+            // Nếu chỉ có biến thể 'basic', cho phép lưu và đặt filteredVariants là biến thể 'basic'
+            filteredVariants = filteredVariants.filter(variant => variant.size === 'basic');
+        } else if (selectedSizes.length === 1 && selectedSizes[0] !== 'S') {
             setSingleSizeAlert(true); // Show alert if only one size is selected and it's not S
             return;
         }
+
 
         setSingleSizeAlert(false);
 
@@ -236,7 +224,6 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
         if (file) formData.append('itemImage', file);
         formData.append('description', description);
         formData.append('status', status);
-        formData.append('statusToday', statusToday);
         if (selectedMenu !== undefined) {
             formData.append('menuID', selectedMenu.toString());
         }
@@ -246,7 +233,7 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
             formData.append(`variant[${index}][discount]`, variant.discount.toString());
         });
 
-        console.log(itemName, description, fileName, status, statusToday, selectedMenu, filteredVariants);
+        console.log(itemName, description, fileName, status, selectedMenu, filteredVariants);
 
         try {
             const response = await fetch(`${API_Url}/updateMenuItem/${productID}`, {
@@ -262,9 +249,10 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
             const result = await response.json();
             const updatedProduct = result.data;
             onEditProduct(updatedProduct);
-            // resetForm();
-            //Show thông báo thêm sản phẩm thành công
-            setOpenAlert(true)
+            //Show thông báo sửa sản phẩm thành công
+            setAlertMessage("Đã sửa sản phẩm thành công!"); // Gọi hàm để cập nhật thông điệp
+            setOpenAlert(true); // Mở alert khi sửa thành công
+
 
         } catch (error) {
             console.error(error);
@@ -415,34 +403,19 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                                 </Select>
                             </FormControl>
 
-                            <div style={{ display: 'flex', marginTop: '15px' }}>
-                                <FormControl sx={{ minWidth: '210px' }}>
-                                    <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
-                                    <Select
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        value={status}
-                                        label="Trạng thái"
-                                        onChange={handChangeStatus}
-                                    >
-                                        <MenuItem value='hidden'>Ẩn</MenuItem>
-                                        <MenuItem value='display'>Hiện</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                <FormControl sx={{ minWidth: '210px', marginLeft: '10px' }}>
-                                    <InputLabel id="demo-simple-select-label">Tình trạng</InputLabel>
-                                    <Select
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        value={statusToday}
-                                        label="Trạng thái"
-                                        onChange={handChangeStatusToday}
-                                    >
-                                        <MenuItem value='inStock'>Còn hàng</MenuItem>
-                                        <MenuItem value='outOfStock'>Hết hàng</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </div>
+                            <FormControl sx={{ marginTop: '15px' }}>
+                                <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    value={status}
+                                    label="Trạng thái"
+                                    onChange={handChangeStatus}
+                                >
+                                    <MenuItem value='hidden'>Ẩn</MenuItem>
+                                    <MenuItem value='display'>Hiện</MenuItem>
+                                </Select>
+                            </FormControl>
 
                             <div style={{ display: 'flex', alignItems: 'flex-start', marginTop: '10px' }}>
                                 <Button
@@ -481,9 +454,9 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                                 onChange={(e) => setDescription(e.target.value)}
                             />
                             {singleSizeAlert && (
-                            <Alert severity="warning" sx={{ maxWidth: '420px', marginTop: '10px' }}>
-                                Vui lòng chọn 2 size trở nên, nếu chọn 1 size thì chọn size S.
-                            </Alert>
+                                <Alert severity="warning" sx={{ maxWidth: '420px', marginTop: '10px' }}>
+                                    Vui lòng chọn 2 size trở nên, nếu chọn 1 size thì chọn size S.
+                                </Alert>
                             )}
                         </FormControl>
                     </DialogContent>
@@ -497,11 +470,6 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct }) =
                     </DialogActions>
                 </BootstrapDialog>
             </React.Fragment>
-            <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
-                <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
-                    Sửa sản phẩm thành công !
-                </Alert>
-            </Snackbar>
         </>
     )
 };

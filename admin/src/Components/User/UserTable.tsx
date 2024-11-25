@@ -51,7 +51,7 @@ const UserTable: React.FC = () => {
 
     //Đóng mở Alert
     const handleAlertClose = (
-        event?: React.SyntheticEvent | Event,
+        _event?: React.SyntheticEvent | Event,
         reason?: SnackbarCloseReason,
     ) => {
         if (reason === 'clickaway') {

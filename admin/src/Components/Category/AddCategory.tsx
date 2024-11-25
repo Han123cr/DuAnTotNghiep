@@ -8,8 +8,6 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState } from 'react';
 import { API_Url } from "../../../tsconfig.json"
@@ -23,6 +21,8 @@ interface Menu {
 
 interface AddCategoryProps {
     onAddCategory: (newCategory: Menu) => void;
+    setOpenAlert: (open: boolean) => void; // Nhận hàm để cập nhật trạng thái alert
+    setAlertMessage: (message: string) => void; // Nhận hàm để cập nhật thông điệp
 }
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -34,9 +34,8 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
+const AddCategory: React.FC<AddCategoryProps> = ({ onAddCategory, setOpenAlert, setAlertMessage }) => {
 
-    const [openAlert, setOpenAlert] = useState(false)
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
@@ -82,16 +81,6 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
 
     //Đóng mở alert
 
-    const handleAlertClose = (
-        event?: React.SyntheticEvent | Event,
-        reason?: SnackbarCloseReason,
-    ) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenAlert(false);
-    }
-
     const handleSubmit = async () => {
         const formData = new FormData();
         formData.append('menuName', menuName);
@@ -114,11 +103,12 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
             const newCategory = await response.json();
 
             // const newCategory = result.data;
-            
+
             onAddCategory(newCategory)
             resetForm();
             //Show thông báo thêm danh mục thành công
-            setOpenAlert(true)
+            setAlertMessage("Đã thêm danh mục thành công!"); // Gọi hàm để cập nhật thông điệp
+            setOpenAlert(true); // Mở alert khi sửa thành công
 
         } catch (error) {
             console.error(error);
@@ -225,11 +215,7 @@ const AddCategory: React.FC<AddCategoryProps> = ({onAddCategory}) => {
                     </DialogActions>
                 </BootstrapDialog>
             </React.Fragment>
-            <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
-                <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
-                    Thêm danh mục thành công !
-                </Alert>
-            </Snackbar>
+
         </>
     )
 };

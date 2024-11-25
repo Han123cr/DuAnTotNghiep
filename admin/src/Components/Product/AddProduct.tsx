@@ -8,7 +8,6 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState, useEffect } from 'react';
@@ -22,7 +21,6 @@ interface MenuItem {
     price: number;
     discount: number;
     size: string;
-    statusToday: string;
     status: string;
     menuID: number;
     variants: Variant[];
@@ -43,6 +41,8 @@ interface Menu {
 
 interface AddProductProps {
     onAddProduct: (newProduct: MenuItem) => void;
+    setOpenAlert: (open: boolean) => void; // Nhận hàm để cập nhật trạng thái alert
+    setAlertMessage: (message: string) => void; // Nhận hàm để cập nhật thông điệp
 }
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -54,14 +54,12 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
+const AddProduct: React.FC<AddProductProps> = ({ onAddProduct, setOpenAlert, setAlertMessage }) => {
 
-    const [openAlert, setOpenAlert] = useState(false)
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
     const [status, setStatus] = React.useState('');
-    const [statusToday, setStatusToday] = React.useState('');
     const [itemName, setItemName] = useState('');
     const [description, setDescription] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
@@ -77,7 +75,6 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
         setFileName('');
         setImageSrc('');
         setStatus('');
-        setStatusToday('');
         setItemName('');
         setDescription('');
         setFile(null);
@@ -89,7 +86,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
     useEffect(() => {
         const fetchMenus = async () => {
             try {
-                const response = await fetch(`https://savory.website/api/admin/getMenus`);
+                const response = await fetch(`${API_Url}/getMenus`);
                 const data: Menu[] = await response.json();
                 console.log(data);
                 setMenuData(data)
@@ -116,13 +113,9 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
         }
     };
 
-    //Select status và statusToday
+    //Select status
     const handChangeStatus = (event: SelectChangeEvent) => {
         setStatus(event.target.value as string);
-    };
-
-    const handChangeStatusToday = (event: SelectChangeEvent) => {
-        setStatusToday(event.target.value as string);
     };
 
     const handChangeMenu = (event: SelectChangeEvent) => {
@@ -162,26 +155,15 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
         setOpen(false);
     };
 
-    //Đóng mở alert
-    const handleAlertClose = (
-        event?: React.SyntheticEvent | Event,
-        reason?: SnackbarCloseReason,
-    ) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenAlert(false);
-    }
-
     const handleSubmit = async () => {
         let filteredVariants = variants;
 
-            if (selectedSizes.length === 1 && selectedSizes[0] !== 'S') {
-                setSingleSizeAlert(true); // Show alert if only one size is selected and it's not S
-                return;
-            }
-    
-            setSingleSizeAlert(false);
+        if (selectedSizes.length === 1 && selectedSizes[0] !== 'S') {
+            setSingleSizeAlert(true); // Show alert if only one size is selected and it's not S
+            return;
+        }
+
+        setSingleSizeAlert(false);
 
         // Check if only size 'S' is selected
         if (selectedSizes.length === 1 && selectedSizes.includes('S')) {
@@ -196,7 +178,6 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
         if (file) formData.append('itemImage', file);
         formData.append('description', description);
         formData.append('status', status);
-        formData.append('statusToday', statusToday);
         if (selectedMenu !== undefined) {
             formData.append('menuID', selectedMenu.toString());
         }
@@ -206,7 +187,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
             formData.append(`variant[${index}][discount]`, variant.discount.toString());
         });
 
-        console.log(itemName, description, fileName, status, statusToday, selectedMenu, filteredVariants);
+        console.log(itemName, description, fileName, status, selectedMenu, filteredVariants);
 
         try {
             const response = await fetch(`${API_Url}/createMenuItem`, {
@@ -228,7 +209,8 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
             onAddProduct(newProduct)
             resetForm();
             //Show thông báo thêm sản phẩm thành công
-            setOpenAlert(true)
+            setAlertMessage("Đã thêm sản phẩm thành công!"); // Gọi hàm để cập nhật thông điệp
+            setOpenAlert(true); // Mở alert khi sửa thành công
 
         } catch (error) {
             console.error(error);
@@ -327,9 +309,6 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                             ))}
                             {/* Hiển thị giá tiền và giá giảm cho từng size được chọn */}
 
-
-
-
                             <FormControl sx={{ marginTop: '15px' }}>
                                 <InputLabel id="demo-simple-select-label">Danh mục</InputLabel>
                                 <Select
@@ -347,34 +326,19 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                                 </Select>
                             </FormControl>
 
-                            <div style={{ display: 'flex', marginTop: '15px' }}>
-                                <FormControl sx={{ minWidth: '210px' }}>
-                                    <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
-                                    <Select
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        value={status}
-                                        label="Trạng thái"
-                                        onChange={handChangeStatus}
-                                    >
-                                        <MenuItem value='hidden'>Ẩn</MenuItem>
-                                        <MenuItem value='display'>Hiện</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                <FormControl sx={{ minWidth: '210px', marginLeft: '10px' }}>
-                                    <InputLabel id="demo-simple-select-label">Tình trạng</InputLabel>
-                                    <Select
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        value={statusToday}
-                                        label="Trạng thái"
-                                        onChange={handChangeStatusToday}
-                                    >
-                                        <MenuItem value='inStock'>Còn hàng</MenuItem>
-                                        <MenuItem value='outOfStock'>Hết hàng</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </div>
+                            <FormControl sx={{ marginTop: '15px' }}>
+                                <InputLabel id="demo-simple-select-label">Trạng thái</InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    value={status}
+                                    label="Trạng thái"
+                                    onChange={handChangeStatus}
+                                >
+                                    <MenuItem value='hidden'>Ẩn</MenuItem>
+                                    <MenuItem value='display'>Hiện</MenuItem>
+                                </Select>
+                            </FormControl>
 
                             <div style={{ display: 'flex', alignItems: 'flex-start', marginTop: '10px' }}>
                                 <Button
@@ -413,10 +377,10 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                                 onChange={(e) => setDescription(e.target.value)}
                             />
                             {singleSizeAlert && (
-                            <Alert severity="warning" sx={{ maxWidth: '420px', marginTop: '10px' }}>
-                                Vui lòng chọn 2 size trở nên, nếu chọn 1 size thì chọn size S.
-                            </Alert>
-                        )}
+                                <Alert severity="warning" sx={{ maxWidth: '420px', marginTop: '10px' }}>
+                                    Vui lòng chọn 2 size trở nên, nếu chọn 1 size thì chọn size S.
+                                </Alert>
+                            )}
                         </FormControl>
                     </DialogContent>
                     <DialogActions>
@@ -429,11 +393,6 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct }) => {
                     </DialogActions>
                 </BootstrapDialog>
             </React.Fragment>
-            <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
-                <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
-                    Thêm sản phẩm thành công !
-                </Alert>
-            </Snackbar>
         </>
     )
 };

@@ -4,7 +4,7 @@ import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
 import ProductVariant from "./ProductVariant";
 import Swal from "sweetalert2";
-import { Chip, Paper } from "@mui/material";
+import { Alert, Chip, Paper, Snackbar } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 interface Product {
@@ -29,6 +29,8 @@ const ProductTable: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [editedProduct, setEditedProduct] = useState<Product>();
+    const [openAlert, setOpenAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState(""); // Thông điệp thông báo
 
     const fetchProducts = async () => {
         try {
@@ -80,6 +82,8 @@ const ProductTable: React.FC = () => {
     //Hàm để thêm sản phẩm mới vào danh sách
     const handleAddProduct = (newProduct: Product) => {
         setProducts((prevProducts) => [newProduct, ...prevProducts]);
+        setAlertMessage("Đã thêm sản phẩm thành công!");
+        setOpenAlert(true);
     };
 
     const handleEditProduct = (updatedProduct: Product) => {
@@ -89,6 +93,8 @@ const ProductTable: React.FC = () => {
                 product.menuItemID === updatedProduct.menuItemID ? updatedProduct : product
             )
         );
+        setAlertMessage("Đã sửa sản phẩm thành công!");
+        setOpenAlert(true)
     };
 
     const deleteProduct = async (id: number, itemName: string) => {
@@ -188,6 +194,8 @@ const ProductTable: React.FC = () => {
                     <EditProduct
                         productID={params.row.menuItemID}
                         onEditProduct={handleEditProduct}
+                        setOpenAlert={setOpenAlert}
+                        setAlertMessage={setAlertMessage} 
                     />
                     <ProductVariant
                         productID={params.row.menuItemID}
@@ -209,7 +217,11 @@ const ProductTable: React.FC = () => {
     return (
         <>
             <div style={{ display: 'flex' }} className="row element-button">
-                <AddProduct onAddProduct={handleAddProduct} />
+                <AddProduct 
+                    onAddProduct={handleAddProduct} 
+                    setOpenAlert={setOpenAlert}
+                    setAlertMessage={setAlertMessage} 
+                />
                 {/* <TextField
                     variant="outlined"
                     size="small" // Làm cho TextField nhỏ hơn
@@ -232,6 +244,12 @@ const ProductTable: React.FC = () => {
                     rowHeight={80}
                 />
             </Paper>
+
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}>
+                <Alert onClose={() => setOpenAlert(false)} severity="success" variant="filled" sx={{ width: '100%' }}>
+                    {alertMessage} {/* Hiển thị thông điệp tương ứng */}
+                </Alert>
+            </Snackbar>
         </>
     )
 };

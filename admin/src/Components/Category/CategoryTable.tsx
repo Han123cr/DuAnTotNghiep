@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import AddCategory from "./AddCategory";
 import EditCategory from "./EditCategory";
 import Swal from "sweetalert2";
-import { Chip, Paper } from "@mui/material";
+import { Alert, Chip, Paper, Snackbar } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
 interface Category {
@@ -15,6 +15,8 @@ interface Category {
 
 const CategoryTable: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
+    const [openAlert, setOpenAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState(""); // Thông điệp thông báo
 
     const fetchCategories = async () => {
         try {
@@ -41,9 +43,11 @@ const CategoryTable: React.FC = () => {
         fetchCategories();
     }, []);
 
-    // //Hàm để thêm sản phẩm mới vào danh sách
+    //Hàm để thêm sản phẩm mới vào danh sách
     const handleAddCategory = (newCategory: Category) => {
         setCategories((prevCategories) => [newCategory, ...prevCategories]);
+        setAlertMessage("Đã thêm danh mục thành công!");
+        setOpenAlert(true);
     };
 
     const handleEditCategory = (updatedCategory: Category) => {
@@ -52,6 +56,8 @@ const CategoryTable: React.FC = () => {
                 category.menuID === updatedCategory.menuID ? updatedCategory : category
             )
         );
+        setAlertMessage("Đã sửa danh mục thành công!");
+        setOpenAlert(true)
     };
 
     const deleteCategory = async (id: number, menuName: string) => {
@@ -128,7 +134,12 @@ const CategoryTable: React.FC = () => {
                     >
                         <i className="fas fa-trash-alt" />
                     </button>
-                    <EditCategory categoryID={params.row.menuID} onEditCategory={handleEditCategory} />
+                    <EditCategory 
+                        categoryID={params.row.menuID} 
+                        onEditCategory={handleEditCategory} 
+                        setOpenAlert={setOpenAlert}
+                        setAlertMessage={setAlertMessage}    
+                    />
                 </>
             )
         }
@@ -144,15 +155,11 @@ const CategoryTable: React.FC = () => {
     return (
         <>
             <div style={{ display: 'flex' }}>
-                <AddCategory onAddCategory={handleAddCategory} />
-                {/* <TextField
-                    variant="outlined"
-                    size="small" // Làm cho TextField nhỏ hơn
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    sx={{ width: 200, mb: 2, left: '540px' }}
-                    placeholder="Tìm kiếm..."
-                /> */}
+                <AddCategory 
+                    onAddCategory={handleAddCategory}
+                    setOpenAlert={setOpenAlert}
+                    setAlertMessage={setAlertMessage} 
+                />
             </div>
 
             <Paper sx={{ height: 400, width: '100%' }}>
@@ -165,6 +172,12 @@ const CategoryTable: React.FC = () => {
                     rowHeight={80}
                 />
             </Paper>
+
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}>
+                <Alert onClose={() => setOpenAlert(false)} severity="success" variant="filled" sx={{ width: '100%' }}>
+                    {alertMessage} {/* Hiển thị thông điệp tương ứng */}
+                </Alert>
+            </Snackbar>
         </>
     )
 };

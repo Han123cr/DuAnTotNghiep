@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
+import Routers from "../Router";
 // import Swal from "sweetalert2";
 
 interface Voucher {
@@ -49,11 +50,11 @@ const VoucherTable: React.FC = () => {
     }, []);
 
     const handleAddVoucher = () => {
-        navigate('/addvoucher')
+        navigate(`${Routers.ADMIN_ADDVOUCHER}`)
     }
 
     const handleEditVoucher = (voucherID: number) => {
-        navigate(`/editvoucher/${voucherID}`)
+        navigate(`${Routers.ADMIN_EDITVOUCHER}/${voucherID}`)
     }
 
     const columns: GridColDef[] = [

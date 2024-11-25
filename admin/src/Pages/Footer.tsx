@@ -1,4 +1,11 @@
 const Footer = () => {
+
+  const isLoginPage = window.location.pathname === '/login';
+
+  if (isLoginPage) {
+    return null; // Không hiển thị gì nếu là trang login
+  }
+  
   return (
     <>
       <footer className="sticky-footer bg-white">

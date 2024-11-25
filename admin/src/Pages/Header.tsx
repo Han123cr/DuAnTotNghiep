@@ -1,6 +1,7 @@
 import { Avatar } from '@mui/material'
 import { Link, useLocation } from 'react-router-dom'
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import Routers from '../Components/Router';
 
 export const HeaderUl = () => {
 
@@ -24,8 +25,8 @@ export const HeaderUl = () => {
         {/* Heading */}
         <div className="sidebar-heading">Thống kê</div>
         {/* Thống kê báo cáo */}
-        <li className={`nav-item ${location.pathname === '/home' ? 'active' : ''}`}>
-          <Link to="/home" className="nav-link">
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_HOME}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_HOME} className="nav-link">
             <i className="fas fa-fw fa-tachometer-alt" />
             <span>Thống kê báo cáo</span>
           </Link>
@@ -33,14 +34,14 @@ export const HeaderUl = () => {
         <hr className="sidebar-divider" />
         {/* Quản lý sản phẩm */}
         <div className="sidebar-heading">Sản phẩm</div>
-        <li className={`nav-item ${location.pathname === '/category' ? 'active' : ''}`}>
-          <Link to="/category" className="nav-link">
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_CATEGORY}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_CATEGORY} className="nav-link">
             <i className="fas fa-fw fa-cog" />
             <span>Quản lý thực đơn</span>
           </Link>
         </li>
-        <li className={`nav-item ${location.pathname === '/product' ? 'active' : ''}`}>
-          <Link to='/product' className="nav-link">
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_PRODUCT}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_PRODUCT} className="nav-link">
             <i className="fas fa-fw fa-wrench" />
             <span>Quản lý món ăn</span>
           </Link>
@@ -49,8 +50,8 @@ export const HeaderUl = () => {
         <hr className="sidebar-divider" />
         {/* Dịch vụ */}
         <div className="sidebar-heading">Dịch vụ</div>
-        <li className={`nav-item ${location.pathname === '/tableorders' ? 'active' : ''}`}>
-          <Link to='/tableorders' className="nav-link">
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_TABLEORDERS}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_TABLEORDERS} className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý đơn đặt bàn</span>
           </Link>
@@ -70,8 +71,8 @@ export const HeaderUl = () => {
         <hr className="sidebar-divider" />
         {/* Quản lý đơn hàng */}
         <div className="sidebar-heading">Đơn hàng</div>
-        <li className={`nav-item ${location.pathname === '/orders' ? 'active' : ''}`}>
-          <Link to="/orders" className="nav-link">
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_ORDERS}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_ORDERS} className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý đơn đặt hàng</span>
           </Link>
@@ -79,14 +80,14 @@ export const HeaderUl = () => {
         <hr className="sidebar-divider" />
         {/* Quản lý người dùng */}
         <div className="sidebar-heading">Người dùng</div>
-        <li className={`nav-item ${location.pathname === '/staff' ? 'active' : ''}`}>
-          <Link to='/staff' className="nav-link">
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_STAFF}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_STAFF} className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý nhân viên</span>
           </Link>
         </li>
-        <li className={`nav-item ${location.pathname === '/customer' ? 'active' : ''}`}>
-          <Link to='/customer' className="nav-link">
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_CUSTOMER}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_CUSTOMER} className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý khách hàng</span>
           </Link>
@@ -104,8 +105,8 @@ export const HeaderUl = () => {
         <hr className="sidebar-divider" />
         {/* Quản lý ưu đãi */}
         <div className="sidebar-heading">Ưu đãi</div>
-        <li className={`nav-item ${location.pathname === '/voucher' ? 'active' : ''}`}>
-          <Link to="/voucher" className="nav-link">
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_VOUCHER}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_VOUCHER} className="nav-link">
             <i className="fas fa-fw fa-folder" />
             <span>Quản lý ưu đãi</span>
           </Link>

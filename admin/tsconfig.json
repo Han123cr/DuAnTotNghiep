@@ -1,8 +1,9 @@
 {
   "VITE_UPLOAD_PRESET": "my_upload_preset",
   "VITE_CLOUD_NAME": "dqssd2v7d",
-  "API_Url": "https://savory.website/api/admin",
-  "API_UrlImage": "https://savory.website/img",
+  "API_Url": "https://api.savory.website/admin",
+  "API_UrlImage": "https://api.savory.website/img",
+  
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

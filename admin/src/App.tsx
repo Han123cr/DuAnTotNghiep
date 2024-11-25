@@ -1,6 +1,6 @@
 import '../public/css/sb-admin-2.css'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
-
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import Routers from './Components/Router'
 
 import Home from './Pages/Home'
 import Footer from './Pages/Footer'
@@ -13,24 +13,26 @@ import VoucherPage from './Pages/Voucher/VoucherPage'
 import AddVoucherPage from './Pages/Voucher/AddVoucherPage'
 import EditVoucherPage from './Pages/Voucher/EditVoucherPage'
 import TableOrdersPage from './Pages/TableOrders/TableOrdersPage'
+import LoginPage from './Pages/LoginPage'
 
 function App() {
   return (
     <>
       <Router>
         <Routes>
-          <Route path='/' element={<Navigate to ='/home' />} />
-          <Route path='/home' element={<Home />} />
-          <Route path='/product' element={<ProductPage />} />
-          <Route path='/category' element={<CategoryPage />} />
-          <Route path='/customer' element={<UserPage />} />
-          <Route path='/staff' element={<StaffPage />} />
-          {/* Voucher */}
-          <Route path='/voucher' element={<VoucherPage />} />
-          <Route path='/addvoucher' element={<AddVoucherPage />} />
-          <Route path='/editvoucher/:voucherID' element={<EditVoucherPage />} />
-          <Route path='/orders' element={<OdersPage />} />
-          <Route path='/tableorders' element={<TableOrdersPage />} />
+          {/*------------------------------Admin------------------------------- */}
+            <Route path={Routers.ADMIN_LOGIN} element={<LoginPage />} />
+            <Route path={Routers.ADMIN_HOME} element={<Home />} />
+            <Route path={Routers.ADMIN_PRODUCT} element={<ProductPage />} />
+            <Route path={Routers.ADMIN_CATEGORY} element={<CategoryPage />} />
+            <Route path={Routers.ADMIN_CUSTOMER} element={<UserPage />} />
+            <Route path={Routers.ADMIN_STAFF} element={<StaffPage />} />
+            {/* Voucher */}
+            <Route path={Routers.ADMIN_VOUCHER} element={<VoucherPage />} />
+            <Route path={Routers.ADMIN_ADDVOUCHER} element={<AddVoucherPage />} />
+            <Route path={`${Routers.ADMIN_EDITVOUCHER}/:voucherID`} element={<EditVoucherPage />} />
+            <Route path={Routers.ADMIN_ORDERS} element={<OdersPage />} />
+            <Route path={Routers.ADMIN_TABLEORDERS} element={<TableOrdersPage />} />
         </Routes>
         <Footer />
       </Router>

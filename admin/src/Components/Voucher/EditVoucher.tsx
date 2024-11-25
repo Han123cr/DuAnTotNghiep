@@ -7,6 +7,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { API_Url } from "../../../tsconfig.json"
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import Routers from "../Router";
 
 const EditVoucher = () => {
     const [open, setOpen] = React.useState(false);
@@ -88,7 +89,7 @@ const EditVoucher = () => {
                 setSuccessOpen(true);
 
                 setTimeout(() => {
-                    navigate('/voucher');
+                    navigate(`${Routers.ADMIN_VOUCHER}`);
                 }, 3000);
 
             } else {

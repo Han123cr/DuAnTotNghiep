@@ -6,6 +6,7 @@ import "react-quill/dist/quill.snow.css";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { API_Url } from "../../../tsconfig.json"
 import { useNavigate } from "react-router-dom";
+import Routers from "../Router";
 
 const AddVoucher = () => {
     const [open, setOpen] = React.useState(false);
@@ -68,7 +69,7 @@ const AddVoucher = () => {
                 setSuccessOpen(true);
 
                 setTimeout(() => {
-                    navigate('/voucher');
+                    navigate(`${Routers.ADMIN_VOUCHER}`);
                 }, 3000)
 
             } else {

@@ -8,8 +8,6 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 // import AddIcon from '@mui/icons-material/Add';
-import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { API_Url, API_UrlImage } from "../../../tsconfig.json"
@@ -24,6 +22,8 @@ interface Menu {
 interface EditCategoryProps {
     categoryID: number;
     onEditCategory: (updateCategory: Menu) => void;
+    setOpenAlert: (open: boolean) => void; // Nhận hàm để cập nhật trạng thái alert
+    setAlertMessage: (message: string) => void; // Nhận hàm để cập nhật thông điệp
 }
 
 
@@ -36,9 +36,8 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory }) => {
+const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory, setOpenAlert, setAlertMessage }) => {
 
-    const [openAlert, setOpenAlert] = useState(false)
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
@@ -48,28 +47,28 @@ const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory 
 
     useEffect(() => {
         const fetchCategoryDetails = async () => {
-            try{
+            try {
                 const response = await fetch(`${API_Url}/getMenuDetails/${categoryID}`);
                 const category: Menu = await response.json();
-                if(category){
+                if (category) {
                     setMenuName(category.menuName);
-                    setStatus(category.status); 
+                    setStatus(category.status);
                     setFile(null)
 
-                    const imageName = category.menuImage 
-                    ? category.menuImage.split('/').pop() // Only split if menuImage is a valid string
-                    : '';
+                    const imageName = category.menuImage
+                        ? category.menuImage.split('/').pop() // Only split if menuImage is a valid string
+                        : '';
 
                     setFileName(imageName || '');
-                    
+
                     setImageSrc(`${API_UrlImage}/${category.menuImage}`)
                 }
-            }catch(err){
+            } catch (err) {
                 console.error(err);
             }
         };
 
-        if(open){
+        if (open) {
             fetchCategoryDetails();
         };
     }, [open, categoryID]);
@@ -103,18 +102,6 @@ const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory 
         // resetForm();
     };
 
-    //Đóng mở alert
-
-    const handleAlertClose = (
-        event?: React.SyntheticEvent | Event,
-        reason?: SnackbarCloseReason,
-    ) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenAlert(false);
-    }
-
     const handleSubmit = async () => {
 
         const formData = new FormData();
@@ -137,9 +124,8 @@ const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory 
 
             const updateCategory = await response.json();
             onEditCategory(updateCategory);
-            // resetForm();
-            //Show thông báo thêm danh mục thành công
-            setOpenAlert(true)
+            setAlertMessage("Đã sửa danh mục thành công!"); // Gọi hàm để cập nhật thông điệp
+            setOpenAlert(true); // Mở alert khi sửa thành công
 
         } catch (error) {
             console.error(error);
@@ -160,7 +146,6 @@ const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory 
             >
                 <i className="fas fa-edit" />
             </button>
-
 
             <React.Fragment>
                 <BootstrapDialog
@@ -249,11 +234,6 @@ const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory 
                     </DialogActions>
                 </BootstrapDialog>
             </React.Fragment>
-            <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
-                <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
-                    Cập nhật danh mục thành công !
-                </Alert>
-            </Snackbar>
         </>
     )
 };
