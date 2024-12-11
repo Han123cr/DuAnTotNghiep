@@ -1509,6 +1509,10 @@ pre code {
     flex: 0 0 100%;
     max-width: 100%;
   }
+  .col-xl-71 {
+    flex: 0 0 58.33333%;
+    max-width: 58.33333%;
+  }
   .order-xl-first {
     order: -1;
   }
@@ -1603,7 +1607,7 @@ pre code {
 .table td {
   padding: 20px;
   vertical-align: top;
-  border-top: 1px solid #e3e6f0;
+  border-bottom: 1px solid #e3e6f0;
 }
 
 .table thead th {
@@ -4316,6 +4320,30 @@ input[type="button"].btn-block {
   padding: 0.5rem 1rem;
 }
 
+.nav-link1 {
+  display: block;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+}
+
+.nav-link1 span {
+  color: #7d7e7f;
+  font-weight: 500;
+}
+
+.nav-link1 span:hover {
+  color: #0b3c5d;
+}
+
+.col-2-1 {
+  flex: 0 0 16.66667%;
+  max-width: 16.66667%;
+  position: relative;
+  width: 100%;
+  border-right: 1px solid #000;
+}
+
 .nav-link:hover,
 .nav-link:focus {
   text-decoration: none;
@@ -4870,6 +4898,13 @@ input[type="button"].btn-block {
   flex: 1 1 auto;
   min-height: 1px;
   padding: 1.25rem;
+}
+
+.card-body1 {
+  flex: 1 1 auto;
+  min-height: 1px;
+  padding: 0.25rem;
+  cursor: pointer;
 }
 
 .voucher1 {
@@ -11358,6 +11393,19 @@ a:focus {
 @media (min-width: 768px) {
   .chart-area {
     height: 20rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .chart-area1 {
+    height: 4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .chart-areahehe {
+    height: 20rem;
   }
 }
 
@@ -11947,6 +11995,22 @@ body.sidebar-toggled footer.sticky-footer {
   border: 1px solid #0b3c5d;
 }
 
+.sidebar-brand-text2 {
+  color: #0b3c5d;
+  text-decoration: none;
+  font-weight: 800;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  display: block;
+  font-size: 25px;
+  line-height: 1.3;
+  font-family: "Playfair Display", serif;
+  padding: 5px;
+  margin-top: 20px;
+}
+
 .card1 {
   position: relative;
   display: flex;
@@ -11957,4 +12021,175 @@ body.sidebar-toggled footer.sticky-footer {
   background-clip: border-box;
   border: 1px solid #0b3c5d;
   border-radius: 0.35rem;
+}
+
+.sizeicon {
+  font-size: 15px;
+}
+
+.scrollable-section {
+  height: 500px; /* Chiều cao cố định */
+  overflow-y: auto; /* Kích hoạt cuộn dọc */
+  overflow-x: hidden; /* Ẩn cuộn ngang */
+  padding: 10px; /* Khoảng cách nội dung */
+}
+
+.table-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.table-content {
+  transition: filter 0.2s ease, opacity 0.2s ease;
+  z-index: 1; /* Đảm bảo nội dung chính luôn ở phía trên hover-icons ban đầu */
+}
+
+.hover-icons {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
+.hover-icons i {
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+}
+
+.table-card:hover .hover-icons {
+  opacity: 1;
+}
+
+.table-card:hover .table-content {
+  filter: blur(3px);
+  opacity: 0.6;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column; /* Đặt các thành phần theo chiều dọc */
+  margin-top: 10px; /* Khoảng cách giữa hình ảnh và thông tin sản phẩm */
+  text-align: center; /* Căn giữa nội dung nếu muốn */
+}
+
+.product-name {
+  font-size: 15px; /* Kích thước chữ cho tên sản phẩm */
+  font-weight: bold; /* Tô đậm chữ */
+  margin-bottom: 5px; /* Khoảng cách dưới tên sản phẩm */
+  white-space: nowrap; /* Không cho phép xuống dòng */
+  overflow: hidden; /* Ẩn phần tràn ra ngoài */
+  text-overflow: ellipsis; /* Hiển thị dấu ba chấm */
+}
+
+.product-price {
+  font-size: 16px; /* Kích thước chữ cho giá tiền */
+  color: #888; /* Màu chữ cho giá tiền */
+}
+
+.card-body1 img{
+    width: 120px; /* Đặt chiều rộng cố định */
+    height: 120px; /* Đặt chiều cao cố định */
+    object-fit: cover; /* Giữ hình ảnh vừa khít mà không bị méo */
+    border-radius: 8px; /* Tuỳ chọn: Bo góc */
+}
+
+.scrollable-products {
+  max-height: 540px; /* Đặt chiều cao tối đa, tùy chỉnh theo nhu cầu */
+  overflow-y: auto; /* Kích hoạt cuộn dọc */
+  padding-right: 10px; /* Để tránh thanh cuộn chèn vào nội dung */
+}
+
+.borderLeft{
+  border-left: 1px solid #000;
+}
+
+.h6tableproduct{
+  display: flex;
+  justify-content: center;
+  color: #0b3c5d;
+  font-weight: 700;
+}
+
+th1{
+  padding: 10px 15px;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px; /* Giảm khoảng cách giữa các nút và giá trị */
+}
+
+.quantity-button {
+  cursor: pointer;
+  font-size: 12px; /* Kích thước chữ nhỏ hơn */
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.quantity-button:disabled {
+  background-color: #e0e0e0;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.quantity-value {
+  text-align: center;
+  min-width: 30px; /* Thu nhỏ chiều rộng tối thiểu */
+  font-size: 14px; /* Giảm kích thước chữ */
+}
+
+.primary-btn{
+  display: block;
+  padding: 12px 10px;
+  text-align: center;
+  letter-spacing: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fff;
+  background-color: #000;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.primary-btn:hover {
+  background-color: #0b3c5d;
+}
+
+.scrollable-bill {
+  max-height: 350px; /* Đặt chiều cao tối đa, tùy chỉnh theo nhu cầu */
+  overflow-y: auto; /* Kích hoạt cuộn dọc */
+
+    /* Ẩn thanh cuộn */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer and Edge */
+  }
+  
+  .scrollable-bill::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.total-container {
+  display: flex;
+  justify-content: space-between; /* Căn giữa hai phần tử */
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: red;
+  margin-top: 5px;
+}
+
+.total-label{
+  text-align: left; /* Canh trái cho nhãn */
+}
+
+.total-amount {
+  text-align: right; /* Canh phải cho số tiền */
+  margin: 15px;
 }

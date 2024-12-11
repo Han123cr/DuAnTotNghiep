@@ -1,21 +1,28 @@
 import React, { useState } from "react";
-import { loginByName, loginByPassword } from "../../Services/AuthServices";
-import { Box, Button, Card, CardContent, Checkbox, FormControl, FormControlLabel, IconButton, InputAdornment, InputLabel, OutlinedInput, styled, TextField, Typography } from "@mui/material";
+import { useLogin } from "../../Services/AuthServices";
+import { Alert, Box, Button, Card, CardContent, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Snackbar, TextField, Typography } from "@mui/material";
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 const AdminFormLogin: React.FC = () => {
+    const navigate = useNavigate()
+    const { handleLoginByName, handleLoginByPassWord } = useLogin(); // Use the custom hook
+
     const [loginName, setLoginName] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [step, setStep] = useState<number>(1);
-    const [message, setMessage] = useState<string>('');
+    const [openAlert, setOpenAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState(""); // Thông điệp thông báo
 
     const handleLoginByNameSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         try {
-            const res = await loginByName(loginName);
-            setMessage(res.message);
+            const res = await handleLoginByName(loginName);
+            if(res.status === 200){
+                setAlertMessage('Đã gửi mã xác thực');
+                setOpenAlert(true);
+            }
             setStep(2);
         } catch (err) {
             console.error(err);
@@ -25,19 +32,28 @@ const AdminFormLogin: React.FC = () => {
     const handlePasswordSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         try {
-            const res = await loginByPassword(password);
-            setMessage(res.message);
+            const res = await handleLoginByPassWord(password);
+            if(res.status === 200){
+                setAlertMessage('Đăng nhập thành công');
+                setOpenAlert(true);
+            }
+            localStorage.setItem("isAuthenticated", "true");
             //Điều hướng trang
+            setTimeout(() => {
+                const isAuthenticated = localStorage.getItem("isAuthenticated");
+                console.log(isAuthenticated);
+                
+
+                if (isAuthenticated === "true") {
+                    navigate("/admin");
+                } else {
+                    setAlertMessage("Đã xảy ra lỗi khi xác thực.");
+                }
+            }, 1000);
         } catch (err) {
             console.error(err);
         }
     };
-
-    const LinkStyled = styled('a')(({ theme }) => ({
-        fontSize: '0.875rem',
-        textDecoration: 'none',
-        color: theme.palette.primary.main
-    }))
 
     const [showPassword, setShowPassword] = React.useState(false);
 
@@ -69,7 +85,6 @@ const AdminFormLogin: React.FC = () => {
                             </Typography>
                             <Typography variant='body2'>Đăng nhập để vào trang quản lý</Typography>
                         </Box>
-                        {message && <p>{message}</p>}
                         {step === 1 && (
                             <>
                                 <div style={{ display: 'flex' }}>
@@ -93,7 +108,7 @@ const AdminFormLogin: React.FC = () => {
                         {step === 2 && (
                             <form onSubmit={handlePasswordSubmit}>
                                 <FormControl fullWidth>
-                                    <InputLabel htmlFor='auth-login-password'>Password</InputLabel>
+                                    <InputLabel htmlFor='auth-login-password'>Mã xác thực</InputLabel>
                                     <OutlinedInput
                                         id="outlined-adornment-password"
                                         type={showPassword ? 'text' : 'password'}
@@ -114,35 +129,29 @@ const AdminFormLogin: React.FC = () => {
                                                 </IconButton>
                                             </InputAdornment>
                                         }
-                                        label="Password"
+                                        label="Mã xác thực"
                                     />
                                 </FormControl>
 
-                                <Box
-                                    sx={{ mb: 4, display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}
-                                >
-                                    <FormControlLabel control={<Checkbox />} label='Remember Me' />
-                                    <Link to='/'>
-                                        <LinkStyled onClick={e => e.preventDefault()}>Forgot Password?</LinkStyled>
-                                    </Link>
-                                </Box>
                                 <Button
                                     type="submit"
                                     fullWidth
                                     size='large'
                                     variant='contained'
-                                    sx={{ marginBottom: 7 }}
+                                    sx={{ margin: '15px 0px 7px 0px' }}
                                 >
                                     Login
                                 </Button>
                             </form>
                         )}
-
-
-
                     </CardContent>
                 </Card>
             </Box>
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}>
+                <Alert onClose={() => setOpenAlert(false)} severity="success" variant="filled" sx={{ width: '100%' }}>
+                    {alertMessage} {/* Hiển thị thông điệp tương ứng */}
+                </Alert>
+            </Snackbar>
         </>
 
     )

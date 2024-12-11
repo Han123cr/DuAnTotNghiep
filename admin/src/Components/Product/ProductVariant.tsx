@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect } from 'react';
-import { API_Url } from "../../../tsconfig.json"
+import useApiUrl from '../useApiUrl'
 
 interface Product {
     menuItemID: number;
@@ -18,7 +18,6 @@ interface Product {
     price: number;
     discount: number;
     size: string;
-    statusToday: string;
     status: string;
     menuID: number;
 }
@@ -46,6 +45,9 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 
 const ProductVariant: React.FC<ProductVariantProps> = ({productID}) => {
+
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [open, setOpen] = React.useState(false);
     const [variants, setVariants] = useState<Variant[]>([]);
 
@@ -62,8 +64,9 @@ const ProductVariant: React.FC<ProductVariantProps> = ({productID}) => {
         if (!productID) return;
 
         try {
-            const response = await fetch(`${API_Url}/getMenuItemDetails/${productID}`, {
+            const response = await fetch(`${APIURL}/getMenuItemDetails/${productID}`, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*',
@@ -80,7 +83,7 @@ const ProductVariant: React.FC<ProductVariantProps> = ({productID}) => {
         if(open && productID){
             fetchProductVariants();
         }
-    }, [open, productID]);
+    }, [open, productID, APIURL]);
 
     return (
         <>

@@ -1,7 +1,7 @@
 import { Button, Chip, Paper } from "@mui/material";
 import {DataGrid, GridColDef} from "@mui/x-data-grid"
-import { API_Url } from "../../../tsconfig.json"
-import React, { useEffect, useState } from "react";
+import useApiUrl from '../useApiUrl'
+import React, { useCallback, useEffect, useState } from "react";
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
@@ -23,13 +23,17 @@ interface Voucher {
 }
 
 const VoucherTable: React.FC = () => {
+
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [vouchers, setVouchers] = useState<Voucher[]>([]);
     const navigate = useNavigate();
 
-    const fetchVouchers = async () => {
+    const fetchVouchers = useCallback(async () => {
         try {
-            const response = await fetch(`${API_Url}/getVoucher`, {
+            const response = await fetch(`${APIURL}/getVoucher`, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*',
@@ -43,11 +47,11 @@ const VoucherTable: React.FC = () => {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [APIURL]);
 
     useEffect(() => {
         fetchVouchers();
-    }, []);
+    }, [fetchVouchers]);
 
     const handleAddVoucher = () => {
         navigate(`${Routers.ADMIN_ADDVOUCHER}`)
@@ -60,7 +64,12 @@ const VoucherTable: React.FC = () => {
     const columns: GridColDef[] = [
         { field: 'id', headerName: 'STT', width: 70 },
         { field: 'code', headerName: 'Mã ưu đãi', width: 150 },
-        { field: 'discountType', headerName: 'Phương thức', width: 150 },
+        { 
+            field: 'discountType', 
+            headerName: 'Phương thức', 
+            width: 150 ,
+            renderCell: (params) => params.value === 'percent' ? 'Phần trăm' : 'Tiền mặt'
+        },
         { 
             field: 'reduce', 
             headerName: 'Giá giảm', 

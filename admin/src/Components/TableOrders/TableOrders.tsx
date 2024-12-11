@@ -1,7 +1,7 @@
-import { Box, Button, Chip, ChipProps, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, Paper } from "@mui/material";
-import { API_Url } from "../../../tsconfig.json"
+import { Alert, Box, Button, Chip, ChipProps, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, Paper, Snackbar } from "@mui/material";
+import useApiUrl from '../useApiUrl'
 import { DataGrid, GridColDef } from "@mui/x-data-grid"
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -21,10 +21,14 @@ interface OrderTables {
     branchID: string,
     paymentMethod: string,
     customerID: number,
-    voucherID: null
+    voucherID: null,
+    tableID: string
 }
 
 const TableOrders: React.FC = () => {
+
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [tableOrders, setTableOrders] = useState<OrderTables[]>([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedTableOrder, setSelectedTableOrder] = useState<OrderTables | null>(null);
@@ -32,8 +36,10 @@ const TableOrders: React.FC = () => {
     const [endDate, setEndDate] = useState<dayjs.Dayjs | null>(null);   // Trạng thái cho ngày kết thúc
     const [openDialog, setOpenDialog] = useState(false);  // Trạng thái mở hộp thoại
     const [pendingOrderID, setPendingOrderID] = useState<number | null>(null);  // Đơn hàng đang chờ hủy
+    const [openAlert, setOpenAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState(""); // Thông điệp thông báo
 
-    const fetchOrderTables = async (start: dayjs.Dayjs | null, end: dayjs.Dayjs | null) => {
+    const fetchOrderTables = useCallback(async (start: dayjs.Dayjs | null, end: dayjs.Dayjs | null) => {
         try {
             const currentDate = dayjs();
             // Nếu không có ngày bắt đầu, đặt thành 00:00 của ngày hiện tại
@@ -42,12 +48,13 @@ const TableOrders: React.FC = () => {
             // Nếu không có ngày kết thúc, đặt thành 23:59:59 của ngày ngày mai
             const defaultEnd = end ? end.endOf('day').format('YYYY-MM-DD') : currentDate.add(1, 'day').endOf('day').format('YYYY-MM-DD');
 
-            let url = `${API_Url}/getTableOrders`;
+            let url = `${APIURL}/getTableOrders`;
             url += `?startDate=${defaultStart}&endDate=${defaultEnd}`
 
             console.log(url); // In ra URL đã được tạo
             const response = await fetch(url, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*',
@@ -60,12 +67,13 @@ const TableOrders: React.FC = () => {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [APIURL]);
 
     const updateTableOrderStatus = async (tableOrderID: number, newStatus: string) => {
         try{
-            await fetch(`${API_Url}/updateTableOrderStatus/${tableOrderID}`, {
+            await fetch(`${APIURL}/updateTableOrderStatus/${tableOrderID}`, {
                 method: "POST",
+                credentials: 'include',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ tableOrderStatus: newStatus }),
             })
@@ -85,7 +93,7 @@ const TableOrders: React.FC = () => {
 
     useEffect(() => {
         fetchOrderTables(startDate, endDate);
-    }, [startDate, endDate]);
+    }, [startDate, endDate, fetchOrderTables]);
 
     const handleDateChange = (newStartDate: dayjs.Dayjs | null, newEndDate: dayjs.Dayjs | null) => {
             setStartDate(newStartDate);
@@ -94,6 +102,12 @@ const TableOrders: React.FC = () => {
     }
 
     const handleChipClick = (event: React.MouseEvent<HTMLElement>, tableOrder: OrderTables) => {
+        if (tableOrder.tableOrderStatus === 'completed') {
+            // Hiển thị thông báo khi đơn đã thành công
+            setAlertMessage("Đơn bàn đã thành công, bạn không có quyền sửa");
+            setOpenAlert(true);
+            return;
+        }
         setAnchorEl(event.currentTarget);
         setSelectedTableOrder(tableOrder);
     };
@@ -160,11 +174,12 @@ const TableOrders: React.FC = () => {
                 return <span>{formattedValue}</span>
             }
         },
+        { field: 'tableID', headerName: 'Bàn', width: 90},
         { field: 'notes', headerName: 'Ghi chú', width: 115},
         {
             field: 'tableOrderStatus',
             headerName: 'Trạng thái',
-            width: 165,
+            width: 204,
             renderCell: (params) => {
                 const status = statusLabels[params.value] || {
                     label: "Unknown",
@@ -256,7 +271,13 @@ const TableOrders: React.FC = () => {
                         <Button onClick={handleCancelDialog} color="primary">Hủy</Button>
                         <Button onClick={handleConfirmCancel} color="error">Xác nhận</Button>
                     </DialogActions>
-            </Dialog>   
+            </Dialog> 
+
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}>
+                <Alert onClose={() => setOpenAlert(false)} severity="error" variant="filled" sx={{ width: '100%' }}>
+                    {alertMessage} {/* Hiển thị thông điệp tương ứng */}
+                </Alert>
+            </Snackbar>
         </>
     )
 }

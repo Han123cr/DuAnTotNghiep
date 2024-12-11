@@ -11,6 +11,10 @@ const Routers = {
     ADMIN_EDITVOUCHER: "/admin/editvoucher",
     ADMIN_ORDERS: "/admin/orders",
     ADMIN_TABLEORDERS: "/admin/tableorders",
+    ADMIN_LOGINWITHLINK: "/admin/loginWithLink",
+    ADMIN_TABLE: "/admin/tables",
+    ADMIN_TABLEPRODUCT: "/admin/tableproduct",
+    ADMIN_BILL: "/admin/bill",
     // ----------------------------STAFF----------------------//
     STAFF_HOME: "/staff",
     // ----------------------------MANAGE----------------------//

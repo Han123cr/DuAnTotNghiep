@@ -4,11 +4,14 @@ import React, { useCallback, useRef, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { API_Url } from "../../../tsconfig.json"
+import useApiUrl from '../useApiUrl'
 import { useNavigate } from "react-router-dom";
 import Routers from "../Router";
 
 const AddVoucher = () => {
+
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [open, setOpen] = React.useState(false);
     const [successOpen, setSuccessOpen] = useState(false);
     const [title, setTitle] = useState('');
@@ -56,8 +59,9 @@ const AddVoucher = () => {
         };
 
         try {
-            const response = await fetch(`${API_Url}/createVoucher`, {
+            const response = await fetch(`${APIURL}/createVoucher`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -156,6 +160,8 @@ const AddVoucher = () => {
                 return;
             }
             setReducePrice(value);
+        }else{
+            setReducePrice(value)
         }
     }
 
@@ -171,8 +177,8 @@ const AddVoucher = () => {
             <div className="row">
                 <div className="col-xl-12 col-lg-7">
                     <div className="card shadow mb-4">
-                        <div className="card-body voucher1">
-                            <div className="chart-area">
+                        <div style={{height: '500px'}} className="card-body voucher1">
+                            <div className="chart-areahehe">
                                 <Typography sx={{ color: '#000' }} variant="h6">Tiêu đề</Typography>
                                 <TextField
                                     fullWidth
@@ -183,7 +189,7 @@ const AddVoucher = () => {
                                     onChange={(e) => setTitle(e.target.value)}
                                 />
                                 <ReactQuill
-                                    style={{ marginTop: '20px', height: '200px' }}
+                                    style={{ marginTop: '20px', height: '300px' }}
                                     ref={reactQuillReff}
                                     theme="snow"
                                     value={content}
@@ -249,7 +255,7 @@ const AddVoucher = () => {
                         </div>
                         {/* Card Body */}
                         <div className="voucher2">
-                            <div className="chart-area">
+                            <div className="chart-areahehe">
                                 <TextField
                                     fullWidth
                                     id="standard-basic"
@@ -363,7 +369,7 @@ const AddVoucher = () => {
                         </div>
                         {/* Card Body */}
                         <div className="card-body">
-                            <div className="chart-area">
+                            <div className="chart-areahehe">
                                 <Button
                                     role={undefined}
                                     tabIndex={-1}

@@ -11,7 +11,7 @@ import AddIcon from '@mui/icons-material/Add';
 import Alert from '@mui/material/Alert';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { API_Url } from "../../../tsconfig.json"
+import useApiUrl from '../useApiUrl'
 
 interface MenuItem {
     menuItemID: number;
@@ -56,6 +56,8 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 const AddProduct: React.FC<AddProductProps> = ({ onAddProduct, setOpenAlert, setAlertMessage }) => {
 
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
@@ -86,7 +88,10 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct, setOpenAlert, set
     useEffect(() => {
         const fetchMenus = async () => {
             try {
-                const response = await fetch(`${API_Url}/getMenus`);
+                const response = await fetch(`${APIURL}/getMenus`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
                 const data: Menu[] = await response.json();
                 console.log(data);
                 setMenuData(data)
@@ -96,7 +101,7 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct, setOpenAlert, set
         };
 
         fetchMenus();
-    }, []);
+    }, [APIURL]);
 
     //Khi upload ảnh thì sẽ hiện tên file ảnh và hiện ảnh
     const handFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,10 +144,10 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct, setOpenAlert, set
             const existingVariant = prevVariants.find((variant) => variant.size === size);
             if (existingVariant) {
                 return prevVariants.map((variant) =>
-                    variant.size === size ? { ...variant, price, discount } : variant
+                    variant.size === size ? { ...variant, price, discount: isNaN(discount) ? 0 : discount } : variant
                 );
             } else {
-                return [...prevVariants, { size, price, discount }];
+                return [...prevVariants, { size, price, discount: isNaN(discount) ? 0 : discount }];
             }
         });
     };
@@ -190,8 +195,9 @@ const AddProduct: React.FC<AddProductProps> = ({ onAddProduct, setOpenAlert, set
         console.log(itemName, description, fileName, status, selectedMenu, filteredVariants);
 
         try {
-            const response = await fetch(`${API_Url}/createMenuItem`, {
+            const response = await fetch(`${APIURL}/createMenuItem`, {
                 method: 'POST',
+                credentials: 'include',
                 body: formData,
             });
 

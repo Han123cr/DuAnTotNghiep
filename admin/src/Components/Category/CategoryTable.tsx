@@ -1,5 +1,6 @@
-import { API_Url, API_UrlImage } from "../../../tsconfig.json"
-import React, { useEffect, useState } from "react";
+import { API_UrlImage } from "../../../tsconfig.json"
+import useApiUrl from '../useApiUrl'
+import React, { useCallback, useEffect, useState } from "react";
 import AddCategory from "./AddCategory";
 import EditCategory from "./EditCategory";
 import Swal from "sweetalert2";
@@ -14,14 +15,17 @@ interface Category {
 }
 
 const CategoryTable: React.FC = () => {
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [categories, setCategories] = useState<Category[]>([]);
     const [openAlert, setOpenAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState(""); // Thông điệp thông báo
 
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
-            const response = await fetch(`${API_Url}/getMenus`, {
+            const response = await fetch(`${APIURL}/getMenus`, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*',
@@ -37,11 +41,11 @@ const CategoryTable: React.FC = () => {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [APIURL]);
 
     useEffect(() => {
         fetchCategories();
-    }, []);
+    }, [fetchCategories]);
 
     //Hàm để thêm sản phẩm mới vào danh sách
     const handleAddCategory = (newCategory: Category) => {
@@ -78,8 +82,9 @@ const CategoryTable: React.FC = () => {
 
         if (result.isConfirmed) {
             try {
-                const response = await fetch(`${API_Url}/deleteMenu/${id}`, {
+                const response = await fetch(`${APIURL}/deleteMenu/${id}`, {
                     method: 'DELETE',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*',
@@ -150,7 +155,7 @@ const CategoryTable: React.FC = () => {
         ...category
     }));
 
-    const paginationModel = { page: 0, pageSize: 5 };
+    const paginationModel = { page: 0, pageSize: 6 };
 
     return (
         <>
@@ -162,12 +167,12 @@ const CategoryTable: React.FC = () => {
                 />
             </div>
 
-            <Paper sx={{ height: 400, width: '100%' }}>
+            <Paper sx={{ height: 590, width: '100%' }}>
                 <DataGrid
                     rows={rows}
                     columns={columns}
                     initialState={{ pagination: { paginationModel } }}
-                    pageSizeOptions={[5, 10, 20, 30, 100]}
+                    pageSizeOptions={[6, 20, 50, 80, 100]}
                     sx={{ border: 0 }}
                     rowHeight={80}
                 />

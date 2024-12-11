@@ -1,7 +1,16 @@
+import {useState} from 'react';
 import { Avatar } from '@mui/material'
-import { Link, useLocation } from 'react-router-dom'
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Routers from '../Components/Router';
+import NotificationDropdown from '../Components/Noti';
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
+} from "@mui/material";
 
 export const HeaderUl = () => {
 
@@ -14,12 +23,11 @@ export const HeaderUl = () => {
         id="accordionSidebar"
       >
         {/* Sidebar - Brand */}
-        <a
+        <Link to="/admin"
           className="sidebar-brand d-flex align-items-center justify-content-center"
-          href="index.html"
         >
           <div className="sidebar-brand-text mx-3">Savory</div>
-        </a>
+        </Link>
         {/* Divider */}
         <hr className="sidebar-divider" />
         {/* Heading */}
@@ -27,7 +35,7 @@ export const HeaderUl = () => {
         {/* Thống kê báo cáo */}
         <li className={`nav-item ${location.pathname === `${Routers.ADMIN_HOME}` ? 'active' : ''}`}>
           <Link to={Routers.ADMIN_HOME} className="nav-link">
-            <i className="fas fa-fw fa-tachometer-alt" />
+            <i style={{fontSize: 14}} className="fas fa-fw fa-tachometer-alt" />
             <span>Thống kê báo cáo</span>
           </Link>
         </li>
@@ -36,13 +44,13 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Sản phẩm</div>
         <li className={`nav-item ${location.pathname === `${Routers.ADMIN_CATEGORY}` ? 'active' : ''}`}>
           <Link to={Routers.ADMIN_CATEGORY} className="nav-link">
-            <i className="fas fa-fw fa-cog" />
+            <i style={{fontSize: 15}} className="fas fa-fw fa-list" />
             <span>Quản lý thực đơn</span>
           </Link>
         </li>
         <li className={`nav-item ${location.pathname === `${Routers.ADMIN_PRODUCT}` ? 'active' : ''}`}>
           <Link to={Routers.ADMIN_PRODUCT} className="nav-link">
-            <i className="fas fa-fw fa-wrench" />
+            <i style={{fontSize: 15}} className="fas fa-fw fa-list" />
             <span>Quản lý món ăn</span>
           </Link>
         </li>
@@ -52,28 +60,28 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Dịch vụ</div>
         <li className={`nav-item ${location.pathname === `${Routers.ADMIN_TABLEORDERS}` ? 'active' : ''}`}>
           <Link to={Routers.ADMIN_TABLEORDERS} className="nav-link">
-            <i className="fas fa-fw fa-folder" />
+            <i style={{fontSize: 15}} className="fas fa-fw fa-clipboard" />
             <span>Quản lý đơn đặt bàn</span>
           </Link>
         </li>
-        <li className="nav-item">
-          <a className="nav-link" href="#">
-            <i className="fas fa-fw fa-chart-area" />
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_TABLE}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_TABLE} className="nav-link">
+            <i style={{fontSize: 14}} className=" fas fa-fw fa-table" />
             <span>Quản lý bàn</span>
-          </a>
+          </Link>
         </li>
-        <li className="nav-item">
-          <a className="nav-link" href="#">
-            <i className="fas fa-fw fa-table" />
+        <li className={`nav-item ${location.pathname === `${Routers.ADMIN_BILL}` ? 'active' : ''}`}>
+          <Link to={Routers.ADMIN_BILL} className="nav-link">
+            <i style={{fontSize: 15}} className="fas fa-fw fa-receipt" />
             <span>Quản lý hóa đơn</span>
-          </a>
+          </Link>
         </li>
         <hr className="sidebar-divider" />
         {/* Quản lý đơn hàng */}
         <div className="sidebar-heading">Đơn hàng</div>
         <li className={`nav-item ${location.pathname === `${Routers.ADMIN_ORDERS}` ? 'active' : ''}`}>
           <Link to={Routers.ADMIN_ORDERS} className="nav-link">
-            <i className="fas fa-fw fa-folder" />
+            <i style={{fontSize: 15}} className="fas fa-fw fa-bag-shopping" />
             <span>Quản lý đơn đặt hàng</span>
           </Link>
         </li>
@@ -82,13 +90,13 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Người dùng</div>
         <li className={`nav-item ${location.pathname === `${Routers.ADMIN_STAFF}` ? 'active' : ''}`}>
           <Link to={Routers.ADMIN_STAFF} className="nav-link">
-            <i className="fas fa-fw fa-folder" />
+            <i style={{fontSize: 14}} className="fas fa-fw fa-address-book" />
             <span>Quản lý nhân viên</span>
           </Link>
         </li>
         <li className={`nav-item ${location.pathname === `${Routers.ADMIN_CUSTOMER}` ? 'active' : ''}`}>
           <Link to={Routers.ADMIN_CUSTOMER} className="nav-link">
-            <i className="fas fa-fw fa-folder" />
+            <i style={{fontSize: 14}} className="fas fa-fw fa-address-card" />
             <span>Quản lý khách hàng</span>
           </Link>
         </li>
@@ -98,7 +106,7 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Đánh giá</div>
         <li className="nav-item">
           <a className="nav-link" href="#">
-            <i className="fas fa-fw fa-folder" />
+            <i style={{fontSize: 14}} className="fas fa-fw fa-comments" />
             <span>Quản lý đánh giá</span>
           </a>
         </li>
@@ -107,18 +115,9 @@ export const HeaderUl = () => {
         <div className="sidebar-heading">Ưu đãi</div>
         <li className={`nav-item ${location.pathname === `${Routers.ADMIN_VOUCHER}` ? 'active' : ''}`}>
           <Link to={Routers.ADMIN_VOUCHER} className="nav-link">
-            <i className="fas fa-fw fa-folder" />
+            <i style={{fontSize: 15}} className="fas fa-fw fa-tags" />
             <span>Quản lý ưu đãi</span>
           </Link>
-        </li>
-        <hr className="sidebar-divider" />
-        {/* Quản lý thông tin */}
-        <div className="sidebar-heading">Thông tin</div>
-        <li className="nav-item">
-          <a className="nav-link" href="#">
-            <i className="fas fa-fw fa-folder" />
-            <span>Quản lý thông tin</span>
-          </a>
         </li>
       </ul>
     </>
@@ -126,6 +125,27 @@ export const HeaderUl = () => {
 }
 
 export const HeaderNav = () => {
+
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  const handleLogout = () => {
+    //Xóa thông tin xác thực khỏi local
+    localStorage.removeItem('isAuthenticated');
+    //Điều hướng người dùng đến trang đăng nhập
+    navigate('/admin/login')
+    //đóng hộp thoại
+    setOpen(false)
+  }
+
+  const handleOpenDialog = () => {
+    setOpen(true);
+  }
+
+  const handleCloseDialog = () => {
+    setOpen(false);
+  }
+
   return (
     <>
       <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
@@ -176,70 +196,7 @@ export const HeaderNav = () => {
             </div>
           </li>
           {/* Nav Item - Alerts */}
-          <li className="nav-item dropdown no-arrow mx-1">
-            <a
-              className="nav-link dropdown-toggle"
-              href="#"
-              id="alertsDropdown"
-              role="button"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              <NotificationsIcon sx={{fontSize: 28}} />
-              {/* Counter - Alerts */}
-              <span className="badge badge-danger badge-counter">3+</span>
-            </a>
-            {/* Dropdown - Alerts */}
-            <div
-              className="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-              aria-labelledby="alertsDropdown"
-            >
-              <h6 className="dropdown-header">Alerts Center</h6>
-              <a className="dropdown-item d-flex align-items-center" href="#">
-                <div className="mr-3">
-                  <div className="icon-circle bg-primary">
-                    <i className="fas fa-file-alt text-white" />
-                  </div>
-                </div>
-                <div>
-                  <div className="small text-gray-500">December 12, 2019</div>
-                  <span className="font-weight-bold">
-                    A new monthly report is ready to download!
-                  </span>
-                </div>
-              </a>
-              <a className="dropdown-item d-flex align-items-center" href="#">
-                <div className="mr-3">
-                  <div className="icon-circle bg-success">
-                    <i className="fas fa-donate text-white" />
-                  </div>
-                </div>
-                <div>
-                  <div className="small text-gray-500">December 7, 2019</div>
-                  $290.29 has been deposited into your account!
-                </div>
-              </a>
-              <a className="dropdown-item d-flex align-items-center" href="#">
-                <div className="mr-3">
-                  <div className="icon-circle bg-warning">
-                    <i className="fas fa-exclamation-triangle text-white" />
-                  </div>
-                </div>
-                <div>
-                  <div className="small text-gray-500">December 2, 2019</div>
-                  Spending Alert: We've noticed unusually high spending for
-                  your account.
-                </div>
-              </a>
-              <a
-                className="dropdown-item text-center small text-gray-500"
-                href="#"
-              >
-                Show All Alerts
-              </a>
-            </div>
-          </li>
+          <NotificationDropdown/>
           {/* <div class="topbar-divider d-none d-sm-block"></div> */}
           {/* Nav Item - User Information */}
           <li className="nav-item dropdown no-arrow">
@@ -263,28 +220,40 @@ export const HeaderNav = () => {
               className="dropdown-menu dropdown-menu-right shadow animated--grow-in"
               aria-labelledby="userDropdown"
             >
-              <a className="dropdown-item" href="#">
-                <i className="fas fa-user fa-sm fa-fw mr-2 text-gray-400" />
-                Thông tin cá nhân
-              </a>
-              <a className="dropdown-item" href="#">
-                <i className="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400" />
-                Cài đặt
-              </a>
-              {/* <a class="dropdown-item" href="#">
-                              <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                              Activity Log
-                          </a> */}
-              <div className="dropdown-divider" />
               <a
                 className="dropdown-item"
                 href="#"
-                data-toggle="modal"
-                data-target="#logoutModal"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleOpenDialog();
+                }}
               >
                 <i className="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400" />
                 Đăng xuất
               </a>
+
+              {/* Mở hộp thoại xác nhận đăng xuất */}
+              <Dialog
+                open={open}
+                onClose={handleCloseDialog}
+                aria-labelledby="logout-dialog-title"
+                aria-describedby="logout-dialog-description"
+              >
+                <DialogTitle id="logout-dialog-title">Xác nhận đăng xuất</DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="logout-dialog-description">
+                    Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không?
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleCloseDialog} color="error">
+                    Hủy
+                  </Button>
+                  <Button onClick={handleLogout} color="primary" autoFocus>
+                    Đăng xuất
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </div>
           </li>
         </ul>

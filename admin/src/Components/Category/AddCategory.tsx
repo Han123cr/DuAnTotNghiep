@@ -10,7 +10,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState } from 'react';
-import { API_Url } from "../../../tsconfig.json"
+import useApiUrl from '../useApiUrl'
 
 interface Menu {
     menuID: number,
@@ -35,6 +35,8 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 const AddCategory: React.FC<AddCategoryProps> = ({ onAddCategory, setOpenAlert, setAlertMessage }) => {
+
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
 
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
@@ -88,8 +90,9 @@ const AddCategory: React.FC<AddCategoryProps> = ({ onAddCategory, setOpenAlert, 
         formData.append('status', status);
 
         try {
-            const response = await fetch(`${API_Url}/createMenu`, {
+            const response = await fetch(`${APIURL}/createMenu`, {
                 method: 'POST',
+                credentials: 'include',
                 body: formData,
             });
 

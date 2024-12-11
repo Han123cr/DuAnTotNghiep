@@ -7,11 +7,9 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { API_Url } from "../../../tsconfig.json"
+import useApiUrl from '../useApiUrl'
 
 interface Staff {
     adminID: string,
@@ -36,6 +34,8 @@ interface Branch {
 
 interface AddStaffProps {
     onAddStaff: (newStaff: Staff, branch: string) => void;
+    setOpenAlert: (open: boolean) => void; // Nhận hàm để cập nhật trạng thái alert
+    setAlertMessage: (message: string) => void; // Nhận hàm để cập nhật thông điệp
 }
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -47,9 +47,10 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const AddStaff: React.FC<AddStaffProps> = ({ onAddStaff }) => {
+const AddStaff: React.FC<AddStaffProps> = ({ onAddStaff,setOpenAlert, setAlertMessage }) => {
 
-    const [openAlert, setOpenAlert] = useState(false);
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [open, setOpen] = useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
@@ -108,22 +109,14 @@ const AddStaff: React.FC<AddStaffProps> = ({ onAddStaff }) => {
         setOpen(false);
     };
 
-    //Đóng mở alert
-    const handleAlertClose = (
-        _event?: React.SyntheticEvent | Event,
-        reason?: SnackbarCloseReason,
-    ) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenAlert(false);
-    }
-
     //Fetch chi nhánh
     useEffect(() => {
         const fetchBranches = async () => {
             try{
-                const response = await fetch(`${API_Url}/getBranch`);
+                const response = await fetch(`${APIURL}/getBranch`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
                 const data = await response.json();
                 setBranches(data.branches);
             }catch(err){
@@ -131,7 +124,7 @@ const AddStaff: React.FC<AddStaffProps> = ({ onAddStaff }) => {
             }
         };
         fetchBranches();
-    }, []);
+    }, [APIURL]);
 
     const handleChangeBranch = (event: SelectChangeEvent<string>) => {
         setBranchID(event.target.value);
@@ -154,8 +147,9 @@ const AddStaff: React.FC<AddStaffProps> = ({ onAddStaff }) => {
         if (file) formData.append('avatar', file);
 
         try {
-            const response = await fetch(`${API_Url}/createStaff`, {
+            const response = await fetch(`${APIURL}/createStaff`, {
                 method: 'POST',
+                credentials: 'include',
                 body: formData,
             });
 
@@ -163,16 +157,13 @@ const AddStaff: React.FC<AddStaffProps> = ({ onAddStaff }) => {
             if (!response.ok) {
                 throw new Error('Thất bại khi thêm nhân viên');
             }
-
-
             const newStaff = await response.json();
 
-            // const newCategory = result.data;
-
-            onAddStaff(newStaff, branchID)
+            onAddStaff(newStaff.admin, branchID)
             resetForm();
             //Show thông báo thêm danh mục thành công
-            setOpenAlert(true)
+            setAlertMessage("Đã thêm nhân viên thành công!"); // Gọi hàm để cập nhật thông điệp
+            setOpenAlert(true); // Mở alert khi sửa thành công
 
         } catch (error) {
             console.error(error);
@@ -309,11 +300,6 @@ const AddStaff: React.FC<AddStaffProps> = ({ onAddStaff }) => {
                     </DialogActions>
                 </BootstrapDialog>
             </React.Fragment>
-            <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
-                <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
-                    Thêm nhân viên thành công !
-                </Alert>
-            </Snackbar>
         </>
     )
 };

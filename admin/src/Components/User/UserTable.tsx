@@ -1,10 +1,11 @@
-import { API_Url, API_UrlImage } from "../../../tsconfig.json"
-import React, { useEffect, useState } from "react";
+import { API_UrlImage } from "../../../tsconfig.json"
+import React, { useCallback, useEffect, useState } from "react";
 // import Swal from "sweetalert2";
 import { Alert, Chip, Paper, Snackbar, SnackbarCloseReason } from "@mui/material";
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import useApiUrl from '../useApiUrl'
 
 interface Customer {
     customerID: number,
@@ -20,13 +21,17 @@ interface Customer {
 }
 
 const UserTable: React.FC = () => {
+
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [openAlert, setOpenAlert] = useState(false)
 
-    const fetchCustomers = async () => {
+    const fetchCustomers = useCallback( async () => {
         try {
-            const response = await fetch(`${API_Url}/getCustomers`, {
+            const response = await fetch(`${APIURL}/getCustomers`, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*',
@@ -43,11 +48,11 @@ const UserTable: React.FC = () => {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [APIURL]);
 
     useEffect(() => {
         fetchCustomers();
-    }, []);
+    }, [fetchCustomers]);
 
     //Đóng mở Alert
     const handleAlertClose = (
@@ -63,8 +68,9 @@ const UserTable: React.FC = () => {
     const toggleStatus = async (customer: Customer) => {
         const newStatus = customer.status === 'active' ? 'blocked' : 'active';
         try {
-            const response = await fetch(`${API_Url}/updateCustomer/${customer.customerID}`, {
+            const response = await fetch(`${APIURL}/updateCustomer/${customer.customerID}`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*',

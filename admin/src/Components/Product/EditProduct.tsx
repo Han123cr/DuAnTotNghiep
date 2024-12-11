@@ -11,7 +11,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { API_Url, API_UrlImage } from "../../../tsconfig.json"
+import { API_UrlImage } from "../../../tsconfig.json"
+import useApiUrl from '../useApiUrl'
 
 interface MenuItem {
     menuItemID: number;
@@ -57,6 +58,8 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct, setOpenAlert, setAlertMessage }) => {
 
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
@@ -75,7 +78,10 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct, set
     //Load danh mục
     const fetchMenus = async () => {
         try {
-            const response = await fetch(`${API_Url}/getMenus`);
+            const response = await fetch(`${APIURL}/getMenus`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data: Menu[] = await response.json();
             console.log(data);
             setMenuData(data)
@@ -88,7 +94,10 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct, set
     useEffect(() => {
         const fetchProductDetails = async () => {
             try {
-                const response = await fetch(`${API_Url}/getMenuItemDetails/${productID}`);
+                const response = await fetch(`${APIURL}/getMenuItemDetails/${productID}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
                 const product: MenuItem = await response.json();
                 if (product) {
                     setItemName(product.itemName);
@@ -124,7 +133,7 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct, set
         if (open) {
             fetchProductDetails();
         };
-    }, [open, productID]);
+    }, [open, productID, APIURL]);
 
     const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const size = event.target.value;
@@ -152,10 +161,10 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct, set
             const existingVariant = prevVariants.find((variant) => variant.size === size);
             if (existingVariant) {
                 return prevVariants.map((variant) =>
-                    variant.size === size ? { ...variant, price, discount } : variant
+                    variant.size === size ? { ...variant, price, discount: isNaN(discount) ? 0 : discount } : variant
                 );
             } else {
-                return [...prevVariants, { size, price, discount }];
+                return [...prevVariants, { size, price, discount: isNaN(discount) ? 0 : discount }];
             }
         });
     };
@@ -236,8 +245,9 @@ const EditProduct: React.FC<EditProductProps> = ({ productID, onEditProduct, set
         console.log(itemName, description, fileName, status, selectedMenu, filteredVariants);
 
         try {
-            const response = await fetch(`${API_Url}/updateMenuItem/${productID}`, {
+            const response = await fetch(`${APIURL}/updateMenuItem/${productID}`, {
                 method: 'POST',
+                credentials: 'include',
                 body: formData,
             });
 

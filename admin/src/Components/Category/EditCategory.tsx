@@ -10,7 +10,8 @@ import CloseIcon from '@mui/icons-material/Close';
 // import AddIcon from '@mui/icons-material/Add';
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { API_Url, API_UrlImage } from "../../../tsconfig.json"
+import { API_UrlImage } from "../../../tsconfig.json"
+import useApiUrl from '../useApiUrl'
 
 interface Menu {
     menuID: number,
@@ -38,6 +39,8 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory, setOpenAlert, setAlertMessage }) => {
 
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [open, setOpen] = React.useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
@@ -48,7 +51,10 @@ const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory,
     useEffect(() => {
         const fetchCategoryDetails = async () => {
             try {
-                const response = await fetch(`${API_Url}/getMenuDetails/${categoryID}`);
+                const response = await fetch(`${APIURL}/getMenuDetails/${categoryID}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
                 const category: Menu = await response.json();
                 if (category) {
                     setMenuName(category.menuName);
@@ -71,7 +77,7 @@ const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory,
         if (open) {
             fetchCategoryDetails();
         };
-    }, [open, categoryID]);
+    }, [open, categoryID, APIURL]);
 
     //Khi upload ảnh thì sẽ hiện tên file ảnh và hiện ảnh
     const handFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,8 +118,9 @@ const EditCategory: React.FC<EditCategoryProps> = ({ categoryID, onEditCategory,
         console.log(menuName, fileName, status);
 
         try {
-            const response = await fetch(`${API_Url}/updateMenu/${categoryID}`, {
+            const response = await fetch(`${APIURL}/updateMenu/${categoryID}`, {
                 method: 'POST',
+                credentials: 'include',
                 body: formData,
             });
 

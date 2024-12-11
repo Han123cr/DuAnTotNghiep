@@ -1,7 +1,7 @@
-import { Box, Button, Chip, ChipProps, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, Paper } from "@mui/material";
-import { API_Url } from "../../../tsconfig.json"
+import { Alert, Box, Button, Chip, ChipProps, Dialog, DialogActions, DialogContent, DialogTitle, Menu, MenuItem, Paper, Snackbar } from "@mui/material";
+import useApiUrl from '../useApiUrl'
 import { DataGrid, GridColDef } from "@mui/x-data-grid"
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -24,6 +24,9 @@ interface Order {
 }
 
 const Orders: React.FC = () => {
+
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [orders, setOrders] = useState<Order[]>([]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -31,8 +34,10 @@ const Orders: React.FC = () => {
     const [endDate, setEndDate] = useState<dayjs.Dayjs | null>(null);   // Trạng thái cho ngày kết thúc
     const [openDialog, setOpenDialog] = useState(false);  // Trạng thái mở hộp thoại
     const [pendingOrderID, setPendingOrderID] = useState<number | null>(null);  // Đơn hàng đang chờ hủy
+    const [openAlert, setOpenAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState(""); // Thông điệp thông báo
 
-    const fetchOrders = async (start: dayjs.Dayjs | null, end: dayjs.Dayjs | null) => {
+    const fetchOrders = useCallback( async (start: dayjs.Dayjs | null, end: dayjs.Dayjs | null) => {
         try {
             const currentDate = dayjs();
             // Nếu không có ngày bắt đầu, đặt thành 00:00 của ngày hiện tại
@@ -41,11 +46,12 @@ const Orders: React.FC = () => {
             // Nếu không có ngày kết thúc, đặt thành 23:59:59 của ngày ngày mai
             const defaultEnd = end ? end.endOf('day').format('YYYY-MM-DD') : currentDate.add(1, 'day').endOf('day').format('YYYY-MM-DD');
 
-            let url = `${API_Url}/getOrders`;
+            let url = `${APIURL}/getOrders`;
             url += `?startDate=${defaultStart}&endDate=${defaultEnd}`
 
             const response = await fetch(url, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*',
@@ -59,12 +65,13 @@ const Orders: React.FC = () => {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [APIURL]);
 
     const updateOrderStatus = async (orderID: number, newStatus: string) => {
         try {
-            await fetch(`${API_Url}/updateOrder/${orderID}`, {
+            await fetch(`${APIURL}/updateOrder/${orderID}`, {
                 method: "POST",
+                credentials: 'include',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status: newStatus }),
             })
@@ -84,9 +91,15 @@ const Orders: React.FC = () => {
 
     useEffect(() => {
         fetchOrders(startDate, endDate);
-    }, [startDate, endDate]);
+    }, [startDate, endDate, fetchOrders]);
 
     const handleChipClick = (event: React.MouseEvent<HTMLElement>, order: Order) => {
+        if (order.status === 'delivered') {
+            // Hiển thị thông báo khi đơn đã thành công
+            setAlertMessage("Đơn hàng đã thành công, bạn không có quyền sửa");
+            setOpenAlert(true);
+            return;
+        }
         setAnchorEl(event.currentTarget);
         setSelectedOrder(order);
     };
@@ -169,11 +182,12 @@ const Orders: React.FC = () => {
                     label: "Unknown",
                     color: "default",
                 };
+
                 return (
                     <Chip
                         label={status.label}
                         color={status.color}
-                        onClick={(event) =>
+                        onClick={(event) => 
                             handleChipClick(event, params.row as Order)
                         }
                         sx={{
@@ -182,6 +196,21 @@ const Orders: React.FC = () => {
                             opacity: params.value === 'cancelled' ? 0.7 : 1,
                         }}
                     />
+                )
+            }
+        },
+        {
+            field: 'function',
+            headerName: 'Chức năng',
+            width: 204,
+            renderCell: () => {
+                return (
+                    <a href="" className="btn btn-secondary btn-icon-split">
+                        <span className="icon text-white">
+                        <i className="fa-regular fa-eye"></i>
+                        </span>
+                        <span className="text">Xem chi tiết</span>
+                    </a>
                 )
             }
         },
@@ -256,6 +285,12 @@ const Orders: React.FC = () => {
                     <Button onClick={handleConfirmCancel} color="error">Xác nhận</Button>
                 </DialogActions>
             </Dialog>
+
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}>
+                <Alert onClose={() => setOpenAlert(false)} severity="error" variant="filled" sx={{ width: '100%' }}>
+                    {alertMessage} {/* Hiển thị thông điệp tương ứng */}
+                </Alert>
+            </Snackbar>
         </>
     )
 };

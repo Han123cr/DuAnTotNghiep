@@ -1,7 +1,7 @@
 {
   "VITE_UPLOAD_PRESET": "my_upload_preset",
   "VITE_CLOUD_NAME": "dqssd2v7d",
-  "API_Url": "https://api.savory.website/admin",
+  "API_Url": "https://api.savory.website",
   "API_UrlImage": "https://api.savory.website/img",
   
   "files": [],

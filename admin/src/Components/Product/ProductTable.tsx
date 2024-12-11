@@ -1,11 +1,12 @@
-import { API_Url, API_UrlImage } from "../../../tsconfig.json"
-import React, { useEffect, useState } from "react";
+import { API_UrlImage } from "../../../tsconfig.json"
+import React, { useCallback, useEffect, useState } from "react";
 import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
 import ProductVariant from "./ProductVariant";
 import Swal from "sweetalert2";
 import { Alert, Chip, Paper, Snackbar } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import useApiUrl from '../useApiUrl'
 
 interface Product {
     menuItemID: number;
@@ -15,27 +16,24 @@ interface Product {
     price: number;
     discount: number;
     size: string;
-    statusToday: string;
     status: string;
     menuID: number;
 }
 
-interface Category {
-    menuID: number,
-    menuName: string,
-}
-
 const ProductTable: React.FC = () => {
+
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [products, setProducts] = useState<Product[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
     const [editedProduct, setEditedProduct] = useState<Product>();
     const [openAlert, setOpenAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState(""); // Thông điệp thông báo
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback( async () => {
         try {
-            const response = await fetch(`${API_Url}/getMenuItems`, {
+            const response = await fetch(`${APIURL}/getMenuItems`, {
                 method: 'GET',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*',
@@ -51,43 +49,23 @@ const ProductTable: React.FC = () => {
         } catch (err) {
             console.error(err);
         }
-    };
-
-    const fetchCategories = async () => {
-        try {
-            const response = await fetch(`${API_Url}/getMenus`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                },
-            });
-            const data: Category[] = await response.json();
-            //Sắp xếp sản phẩm mới thêm sẽ nằm ở đầu bảng
-            const sortedData = data.sort((a, b) => b.menuID - a.menuID);
-            console.log(data);
-            //Hiện sản phẩm
-            setCategories(sortedData)
-
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    }, [APIURL]);
 
     useEffect(() => {
         fetchProducts();
-        fetchCategories()
-    }, []);
+    }, [fetchProducts, APIURL]);
 
     //Hàm để thêm sản phẩm mới vào danh sách
     const handleAddProduct = (newProduct: Product) => {
         setProducts((prevProducts) => [newProduct, ...prevProducts]);
+        fetchProducts()
         setAlertMessage("Đã thêm sản phẩm thành công!");
         setOpenAlert(true);
     };
 
     const handleEditProduct = (updatedProduct: Product) => {
         setEditedProduct(updatedProduct);
+        fetchProducts()
         setProducts((prevProducts) =>
             prevProducts.map(product =>
                 product.menuItemID === updatedProduct.menuItemID ? updatedProduct : product
@@ -117,8 +95,9 @@ const ProductTable: React.FC = () => {
 
         if (result.isConfirmed) {
             try {
-                const response = await fetch(`${API_Url}/deleteMenuItem/${id}`, {
+                const response = await fetch(`${APIURL}/deleteMenuItem/${id}`, {
                     method: 'DELETE',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*',
@@ -136,11 +115,9 @@ const ProductTable: React.FC = () => {
         }
     };
 
-    const MenuMap = new Map(categories.map((c) => [String(c.menuID), c.menuName]))
-
     const columns: GridColDef[] = [
         { field: 'id', headerName: 'STT', width: 70 },
-        { field: 'itemName', headerName: 'Tên sản phẩm', width: 150 },
+        { field: 'itemName', headerName: 'Tên sản phẩm', width: 200 },
         {
             field: 'itemImage',
             headerName: 'Ảnh',
@@ -150,23 +127,11 @@ const ProductTable: React.FC = () => {
             )
         },
         { 
-            field: 'menuID', 
+            field: 'menuName', 
             headerName: 'Danh mục', 
             width: 100, 
-            renderCell: (params) => MenuMap.get(params.value)
         },
-        { field: 'description', headerName: 'Mô tả', width: 160 },
-        {
-            field: 'statusToday',
-            headerName: 'Tình trạng',
-            width: 120,
-            renderCell: (params) => (
-                <Chip
-                    label={params.value === 'inStock' ? 'Còn hàng' : 'Hết hàng'}
-                    color={params.value === 'inStock' ? 'success' : 'warning'}
-                />
-            ),
-        },
+        { field: 'description', headerName: 'Mô tả', width: 230 },
         {
             field: 'status',
             headerName: 'Trạng thái',
@@ -212,7 +177,7 @@ const ProductTable: React.FC = () => {
         ...product
     }));
 
-    const paginationModel = { page: 0, pageSize: 5 };
+    const paginationModel = { page: 0, pageSize: 6 };
 
     return (
         <>
@@ -234,12 +199,12 @@ const ProductTable: React.FC = () => {
 
 
 
-            <Paper sx={{ height: 400, width: '100%' }}>
+            <Paper sx={{ height: 590, width: '100%' }}>
                 <DataGrid
                     rows={rows}
                     columns={columns}
                     initialState={{ pagination: { paginationModel } }}
-                    pageSizeOptions={[5, 10, 20, 30, 100]}
+                    pageSizeOptions={[6, 20, 50, 80, 100]}
                     sx={{ border: 0 }}
                     rowHeight={80}
                 />

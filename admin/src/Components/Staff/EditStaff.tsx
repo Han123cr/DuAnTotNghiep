@@ -7,11 +7,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { API_Url, API_UrlImage } from "../../../tsconfig.json"
+import { API_UrlImage } from "../../../tsconfig.json"
+import useApiUrl from '../useApiUrl'
 
 interface Staff {
     adminID: string,
@@ -38,6 +37,8 @@ interface EditStaffProps {
     adminID: string,
     branch: string,
     onEditStaff: (updateStaff: Staff, branch: string) => void;
+    setOpenAlert: (open: boolean) => void; // Nhận hàm để cập nhật trạng thái alert
+    setAlertMessage: (message: string) => void; // Nhận hàm để cập nhật thông điệp
 }
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
@@ -49,9 +50,10 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff }) => {
+const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff, setOpenAlert, setAlertMessage }) => {
 
-    const [openAlert, setOpenAlert] = useState(false);
+    const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
+
     const [open, setOpen] = useState(false);
     const [fileName, setFileName] = useState('');
     const [imageSrc, setImageSrc] = useState('');
@@ -71,7 +73,10 @@ const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff }) =
     useEffect(() => {
         const fetchAdminDetail = async () => {
             try {
-                const response = await fetch(`${API_Url}/getStaffs/${branch}/${adminID}`);
+                const response = await fetch(`${APIURL}/getStaffs/${adminID}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
                 const result = await response.json();
                 const staff: Staff = result.admin
                 if(staff){
@@ -104,7 +109,7 @@ const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff }) =
         if(open){
             fetchAdminDetail();
         }
-    }, [open, adminID, branch])
+    }, [open, adminID, branch, APIURL])
 
 
     //Khi upload ảnh thì sẽ hiện tên file ảnh và hiện ảnh
@@ -134,22 +139,14 @@ const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff }) =
         setOpen(false);
     };
 
-    //Đóng mở alert
-    const handleAlertClose = (
-        _event?: React.SyntheticEvent | Event,
-        reason?: SnackbarCloseReason,
-    ) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpenAlert(false);
-    }
-
     //Fetch cửa hàng
     useEffect(() => {
         const fetchBranches = async () => {
             try {
-                const response = await fetch(`${API_Url}/getBranch`);
+                const response = await fetch(`${APIURL}/getBranch`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
                 const data = await response.json();
                 setBranches(data.branches);
             } catch (err) {
@@ -157,7 +154,7 @@ const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff }) =
             }
         };
         fetchBranches();
-    }, []);
+    }, [APIURL]);
 
     const handleChangeBranch = (event: SelectChangeEvent<string>) => {
         setBranchID(event.target.value);
@@ -180,8 +177,9 @@ const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff }) =
         if (file) formData.append('avatar', file);
 
         try {
-            const response = await fetch(`${API_Url}/updateStaff/${adminID}`, {
+            const response = await fetch(`${APIURL}/updateStaff/${adminID}`, {
                 method: 'POST',
+                credentials: 'include',
                 body: formData,
             });
 
@@ -198,7 +196,8 @@ const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff }) =
 
             onEditStaff(newStaff, branchID)
             //Show thông báo sửa nhân viên thành công
-            setOpenAlert(true)
+            setAlertMessage("Đã sửa nhân viên thành công!"); // Gọi hàm để cập nhật thông điệp
+            setOpenAlert(true); // Mở alert khi sửa thành công
 
         } catch (error) {
             console.error(error);
@@ -352,11 +351,6 @@ const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff }) =
                     </DialogActions>
                 </BootstrapDialog>
             </React.Fragment>
-            <Snackbar open={openAlert} autoHideDuration={3000} onClose={handleAlertClose}>
-                <Alert onClose={handleAlertClose} severity="success" variant="filled" sx={{ width: '100%' }}>
-                    Sửa nhân viên thành công !
-                </Alert>
-            </Snackbar>
         </>
     )
 };
