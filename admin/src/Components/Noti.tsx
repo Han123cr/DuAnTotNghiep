@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import useApiUrl from './useApiUrl'
 import { useNavigate } from 'react-router-dom';
+import Routers from './Router';
 
 interface NotiData {
     noti: {
@@ -89,7 +90,7 @@ const NotificationDropdown: React.FC = () => {
     }, [APIURL]);
 
     //Hàm tắt thông báo
-    const handleNotificationClick = (type: 'order' | 'orderTable') => {
+    const handleNotificationClick = (type: 'order' | 'orderTable' | 'serviceReview') => {
         if (!notifications) return;
 
         // Giảm số lượng thông báo của loại tương ứng
@@ -98,9 +99,11 @@ const NotificationDropdown: React.FC = () => {
 
             // Điều hướng đến trang tương ứng
             if (type === 'order') {
-                navigate('/admin/orders'); // Chuyển đến trang đơn hàng
+                navigate(Routers.ADMIN_ORDERS); // Chuyển đến trang đơn hàng
             } else if (type === 'orderTable') {
-                navigate('/admin/tableorders'); // Chuyển đến trang đặt bàn
+                navigate(Routers.ADMIN_TABLEORDERS); // Chuyển đến trang đặt bàn
+            } else if (type === 'serviceReview') {
+                navigate(Routers.ADMIN_REVIEWS)
             }
 
 
@@ -172,6 +175,30 @@ const NotificationDropdown: React.FC = () => {
             );
         }
 
+        // Render thông báo cho đơn hàng mới
+        if (notifications.noti.serviceReview > 0) {
+            alerts.push(
+                <a
+                    className="dropdown-item d-flex align-items-center"
+                    href="#"
+                    key="serviceReview"
+                    onClick={() => handleNotificationClick('serviceReview')}
+                >
+                    <div className="mr-3">
+                        <div className="icon-circle bg-warning">
+                            <i className="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div className="small text-gray-500">Hôm nay</div>
+                        <span className="font-weight-bold">
+                            Bạn đang có {notifications.noti.serviceReview} đánh giá mới!
+                        </span>
+                    </div>
+                </a>
+            );
+        }
+
         return alerts.length > 0 ? alerts : <p className="text-center">Không có thông báo mới</p>;
     };
 
@@ -188,9 +215,9 @@ const NotificationDropdown: React.FC = () => {
             >
                 <NotificationsIcon sx={{ fontSize: 28 }} />
                 {/* Hiển thị tổng số thông báo */}
-                {notifications && (notifications.noti.order + notifications.noti.orderTable > 0) && (
+                {notifications && (notifications.noti.order + notifications.noti.orderTable + notifications.noti.serviceReview > 0) && (
                     <span className="badge badge-danger badge-counter">
-                        {notifications.noti.order + notifications.noti.orderTable}
+                        {notifications.noti.order + notifications.noti.orderTable + notifications.noti.serviceReview}
                     </span>
                 )}
             </a>

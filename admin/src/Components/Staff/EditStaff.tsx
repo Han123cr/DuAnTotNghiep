@@ -149,6 +149,8 @@ const EditStaff: React.FC<EditStaffProps> = ({ adminID, branch, onEditStaff, set
                 });
                 const data = await response.json();
                 setBranches(data.branches);
+                console.log(data);
+                
             } catch (err) {
                 console.error(err);
             }

@@ -1,70 +1,24 @@
 import React, { useState } from "react";
-import { useLogin } from "../../Services/AuthServices";
-import { Alert, Box, Button, Card, CardContent, CircularProgress, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Snackbar, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Card, CardContent, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Snackbar, TextField, Typography } from "@mui/material";
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import useApiUrl from "../useApiUrl";
 import { useNavigate } from 'react-router-dom';
 
-const AdminFormLogin: React.FC = () => {
-    const navigate = useNavigate()
-    const { handleLoginByName, handleLoginByPassWord } = useLogin(); // Use the custom hook
+const LoginSAM: React.FC = () => {
+    const { APIURL } = useApiUrl();
     const url = window.location.href;
     // Tách phần đường dẫn
     const path = new URL(url).pathname;
     // Lấy phần đầu tiên sau dấu "/"
     const admin = path.split('/')[1]; // Lấy phần đầu tiên
 
+    const navigate = useNavigate()
+    const [showPassword, setShowPassword] = React.useState(false);
     const [loginName, setLoginName] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const [step, setStep] = useState<number>(1);
     const [openAlert, setOpenAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState(""); // Thông điệp thông báo
-    const [isLoading, setIsLoading] = useState<boolean>(false); // Trạng thái đang gửi mã
-
-    const handleLoginByNameSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
-        setIsLoading(true)
-        try {
-            const res = await handleLoginByName(loginName);
-            if (res.status === 200) {
-                setAlertMessage('Đã gửi mã xác thực');
-                setOpenAlert(true);
-            }
-            setStep(2);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handlePasswordSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
-        try {
-            const res = await handleLoginByPassWord(password);
-            if (res.status === 200) {
-                setAlertMessage('Đăng nhập thành công');
-                setOpenAlert(true);
-            }
-            localStorage.setItem("isAuthenticated", "true");
-            localStorage.setItem("role", "admin");
-            //Điều hướng trang
-            setTimeout(() => {
-                const isAuthenticated = localStorage.getItem("isAuthenticated");
-                console.log(isAuthenticated);
-                if (isAuthenticated === "true") {
-                    navigate(`/${admin}`);
-                    window.location.reload();
-                } else {
-                    setAlertMessage("Đã xảy ra lỗi khi xác thực.");
-                }
-            }, 3000);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const [showPassword, setShowPassword] = React.useState(false);
 
     const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -72,57 +26,82 @@ const AdminFormLogin: React.FC = () => {
         event.preventDefault();
     };
 
-    const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-    };
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        try {
+            const response = await fetch(`${APIURL}/login`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ loginName, password }),
+                credentials: 'include',
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Đăng nhập thất bại');
+            }
+
+            if (response.status === 200) {
+                setAlertMessage('Đăng nhập thành công');
+                setOpenAlert(true);
+            }
+
+            const data = await response.json();
+            console.log(data.message); // In thông báo thành công từ backend
+
+            localStorage.setItem("isAuthenticated", "true");
+            localStorage.setItem("role", data.role);
+
+            setTimeout(() => {
+                const isAuthenticated = localStorage.getItem("isAuthenticated");
+                console.log(isAuthenticated);
+                if (isAuthenticated === "true") {
+                    navigate(`/${admin}`);
+                    window.location.reload()
+                } else {
+                    setAlertMessage("Đã xảy ra lỗi khi xác thực.");
+                }
+            }, 3000);
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     return (
         <>
             <Box sx={{ boxShadow: 4 }} className='content-center'>
                 <Card sx={{ zIndex: 1 }}>
                     <CardContent sx={{ padding: theme => `${theme.spacing(5, 9, 1)} !important` }}>
-                        <Box sx={{ mb: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <div
                                 className="sidebar-brand d-flex align-items-center justify-content-center"
                             >
                                 <div className="sidebar-brand-text1 mx-3">Savory</div>
                             </div>
                         </Box>
-                        <Box sx={{ mb: 6 }}>
+                        <Box sx={{ mb: 2 }}>
                             <Typography variant='h5' sx={{ fontWeight: 600, marginBottom: 1.5 }}>
                                 Chào mừng trở lại Savory! 👋🏻
                             </Typography>
-                            <Typography variant='body2'>Đăng nhập để vào trang quản trị</Typography>
+                            <Typography variant='body2'>Đăng nhập để vào trang chính</Typography>
                         </Box>
-                        {step === 1 && (
-                            <>
-                                <div style={{ display: 'flex' }}>
-                                    <form onSubmit={handleLoginByNameSubmit}>
-                                        <TextField
-                                            id="outlined-basic"
-                                            label="Email"
-                                            value={loginName}
-                                            variant="outlined"
-                                            onChange={(e) => setLoginName(e.target.value)}
-                                            sx={{ marginBottom: 4, width: 300 }}
-                                        />
-                                        <Button type="submit" sx={{ marginLeft: '10px', height: '55px' }} variant="contained" disabled={isLoading}>
-                                            {isLoading ? (
-                                                <CircularProgress size={24} sx={{ color: "white" }} />
-                                            ) : (
-                                                <i style={{ fontSize: '20px' }} className="fa-solid fa-paper-plane"></i>
-                                            )
-                                            }
-                                        </Button>
-                                    </form>
-                                </div>
-                            </>
-                        )}
-
-                        {step === 2 && (
-                            <form onSubmit={handlePasswordSubmit}>
+                        <form onSubmit={handleLogin}>
+                            <Box sx={{ mb: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    id="outlined-basic"
+                                    label="Email / Số điện thoại"
+                                    value={loginName}
+                                    variant="outlined"
+                                    onChange={(e) => setLoginName(e.target.value)}
+                                    sx={{ marginBottom: 4 }}
+                                />
                                 <FormControl fullWidth>
-                                    <InputLabel htmlFor='auth-login-password'>Mã xác thực</InputLabel>
+                                    <InputLabel htmlFor='auth-login-password'>Mật khẩu</InputLabel>
                                     <OutlinedInput
                                         id="outlined-adornment-password"
                                         type={showPassword ? 'text' : 'password'}
@@ -136,14 +115,13 @@ const AdminFormLogin: React.FC = () => {
                                                     }
                                                     onClick={handleClickShowPassword}
                                                     onMouseDown={handleMouseDownPassword}
-                                                    onMouseUp={handleMouseUpPassword}
                                                     edge="end"
                                                 >
                                                     {showPassword ? <VisibilityOff /> : <Visibility />}
                                                 </IconButton>
                                             </InputAdornment>
                                         }
-                                        label="Mã xác thực"
+                                        label="Mật khẩu"
                                     />
                                 </FormControl>
 
@@ -156,19 +134,19 @@ const AdminFormLogin: React.FC = () => {
                                 >
                                     Đăng nhập
                                 </Button>
-                            </form>
-                        )}
+                            </Box>
+                        </form>
                     </CardContent>
                 </Card>
             </Box>
+
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}>
                 <Alert onClose={() => setOpenAlert(false)} severity="success" variant="filled" sx={{ width: '100%' }}>
                     {alertMessage} {/* Hiển thị thông điệp tương ứng */}
                 </Alert>
             </Snackbar>
         </>
-
     )
 };
 
-export default AdminFormLogin;
+export default LoginSAM;

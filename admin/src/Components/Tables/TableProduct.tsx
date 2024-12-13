@@ -593,10 +593,10 @@ const TableProduct: React.FC = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDialog} color="secondary">
-                        Cancel
+                        Hủy
                     </Button>
                     <Button onClick={handleAddToCart} color="primary" variant="contained">
-                        Add to Cart
+                        Thêm
                     </Button>
                 </DialogActions>
             </Dialog>

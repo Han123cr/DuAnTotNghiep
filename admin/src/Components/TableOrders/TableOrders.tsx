@@ -62,15 +62,22 @@ const TableOrders: React.FC = () => {
             });
             const data = await response.json();
 
-            console.log(data);
-            setTableOrders(data)
+            // Sắp xếp các đơn hàng theo `createdAt` từ mới đến cũ
+            const sortedData = data.sort((a: OrderTables, b: OrderTables) => {
+                const dateA = dayjs(a.createdAt);
+                const dateB = dayjs(b.createdAt);
+                return dateB.isBefore(dateA) ? -1 : 1;  // Sắp xếp mới nhất lên trên
+            });
+
+            console.log(sortedData);
+            setTableOrders(sortedData);
         } catch (err) {
             console.error(err);
         }
     }, [APIURL]);
 
     const updateTableOrderStatus = async (tableOrderID: number, newStatus: string) => {
-        try{
+        try {
             await fetch(`${APIURL}/updateTableOrderStatus/${tableOrderID}`, {
                 method: "POST",
                 credentials: 'include',
@@ -85,9 +92,9 @@ const TableOrders: React.FC = () => {
                         : tableOrder
                 )
             );
-        }catch(err){
+        } catch (err) {
             console.error(err);
-            
+
         }
     }
 
@@ -96,9 +103,9 @@ const TableOrders: React.FC = () => {
     }, [startDate, endDate, fetchOrderTables]);
 
     const handleDateChange = (newStartDate: dayjs.Dayjs | null, newEndDate: dayjs.Dayjs | null) => {
-            setStartDate(newStartDate);
-            setEndDate(newEndDate);
-            fetchOrderTables(newStartDate, newEndDate);
+        setStartDate(newStartDate);
+        setEndDate(newEndDate);
+        fetchOrderTables(newStartDate, newEndDate);
     }
 
     const handleChipClick = (event: React.MouseEvent<HTMLElement>, tableOrder: OrderTables) => {
@@ -149,23 +156,23 @@ const TableOrders: React.FC = () => {
         seated: { label: "Đang sử dụng", color: "info" },
         completed: { label: "Thành công", color: "success" },
         cancelled: { label: "Đã hủy", color: "error" },
-        paid: {label: "Đã thanh toán", color: "success"}
+        paid: { label: "Đã thanh toán", color: "success" }
     };
 
     const columns: GridColDef[] = [
         { field: 'id', headerName: 'STT', width: 50 },
-        { field: 'bookerName', headerName: 'Tên người đặt', width: 120,},
-        { field: 'arrivalTime', headerName: 'Ngày đặt bàn', width: 170},
-        { field: 'bookerPhoneNumber', headerName: 'Số điện thoại', width: 115},
-        { 
-            field: 'numberOfPeople', 
-            headerName: 'Số lượng người', 
+        { field: 'bookerName', headerName: 'Tên người đặt', width: 120, },
+        { field: 'arrivalTime', headerName: 'Ngày đặt bàn', width: 170 },
+        { field: 'bookerPhoneNumber', headerName: 'Số điện thoại', width: 115 },
+        {
+            field: 'numberOfPeople',
+            headerName: 'Số lượng người',
             width: 120,
             renderCell: (params) => params.value + ' người'
         },
-        { 
-            field: 'deposit', 
-            headerName: 'Tiền cọc', 
+        {
+            field: 'deposit',
+            headerName: 'Tiền cọc',
             width: 110,
             renderCell: (params) => {
                 const formattedValue = params.value
@@ -174,8 +181,8 @@ const TableOrders: React.FC = () => {
                 return <span>{formattedValue}</span>
             }
         },
-        { field: 'tableID', headerName: 'Bàn', width: 90},
-        { field: 'notes', headerName: 'Ghi chú', width: 115},
+        { field: 'tableID', headerName: 'Bàn', width: 90 },
+        { field: 'notes', headerName: 'Ghi chú', width: 115 },
         {
             field: 'tableOrderStatus',
             headerName: 'Trạng thái',
@@ -214,15 +221,15 @@ const TableOrders: React.FC = () => {
         <>
             <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker 
-                    label="Từ ngày"
-                    value={startDate}
-                    onChange={(newValue) => handleDateChange(newValue, endDate)}
+                    <DatePicker
+                        label="Từ ngày"
+                        value={startDate}
+                        onChange={(newValue) => handleDateChange(newValue, endDate)}
                     />
-                    <DatePicker 
-                    label="Đến ngày"
-                    value={endDate}
-                    onChange={(newValue) => handleDateChange(startDate ,newValue)}
+                    <DatePicker
+                        label="Đến ngày"
+                        value={endDate}
+                        onChange={(newValue) => handleDateChange(startDate, newValue)}
                     />
                 </LocalizationProvider>
             </Box>
@@ -235,7 +242,7 @@ const TableOrders: React.FC = () => {
                     initialState={{ pagination: { paginationModel } }}
                     pageSizeOptions={[5, 10, 20, 30, 100]}
                     sx={{ border: 0 }}
-                    getRowClassName={(params) => 
+                    getRowClassName={(params) =>
                         params.row.tableOrderStatus === 'cancelled' ? 'cancelled-row' : ''
                     }
                     disableRowSelectionOnClick
@@ -263,15 +270,15 @@ const TableOrders: React.FC = () => {
             </Paper>
 
             <Dialog open={openDialog} onClose={handleCancelDialog}>
-                    <DialogTitle>Xác nhận hủy đơn hàng</DialogTitle>
-                    <DialogContent>
-                        Bạn có chắc chắn muốn hủy đơn bàn này không ?
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCancelDialog} color="primary">Hủy</Button>
-                        <Button onClick={handleConfirmCancel} color="error">Xác nhận</Button>
-                    </DialogActions>
-            </Dialog> 
+                <DialogTitle>Xác nhận hủy đơn hàng</DialogTitle>
+                <DialogContent>
+                    Bạn có chắc chắn muốn hủy đơn bàn này không ?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelDialog} color="primary">Hủy</Button>
+                    <Button onClick={handleConfirmCancel} color="error">Xác nhận</Button>
+                </DialogActions>
+            </Dialog>
 
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}>
                 <Alert onClose={() => setOpenAlert(false)} severity="error" variant="filled" sx={{ width: '100%' }}>

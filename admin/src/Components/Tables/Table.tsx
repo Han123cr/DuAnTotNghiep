@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import useApiUrl from '../useApiUrl'
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, Pagination } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import TableOrderDetailsDialog from "./TableDetail";
 
 interface TableOrder {
     tableOrderID: number;
@@ -26,6 +27,7 @@ const Tables: React.FC = () => {
 
     const { APIURL } = useApiUrl(); // Lấy hàm getApiUrl
     const navigate = useNavigate();
+    const role = localStorage.getItem('role'); // Lấy role từ localStorage
 
     const [tables, setTables] = useState<TableOrder[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -37,7 +39,7 @@ const Tables: React.FC = () => {
     const [openAlert, setOpenAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState(""); // Thông điệp thông báo
 
-    const fetchTable = useCallback( async () => {
+    const fetchTable = useCallback(async () => {
         const response = await fetch(`${APIURL}/getTables`, {
             method: 'GET',
             credentials: 'include',
@@ -61,12 +63,6 @@ const Tables: React.FC = () => {
     useEffect(() => {
         fetchTable()
     }, [fetchTable])
-
-    // const handleBranchChange = (event: SelectChangeEvent) => {
-    //     const branch = event.target.value;
-    //     setSelectedBranch(branch);
-    //     fetchTable();
-    // };
 
     const handleTableClick = async (tableID: string, status: string) => {
         if (status === "open") {
@@ -110,7 +106,7 @@ const Tables: React.FC = () => {
             setOpenAlert(true);
 
             setTimeout(() => {
-                navigate(`/admin/tableproduct/${tableID}`);
+                navigate(`/${role}/tableproduct/${tableID}`);
             }, 2000);
         }
     }
@@ -147,7 +143,7 @@ const Tables: React.FC = () => {
                 setOpenAlert(true);
 
                 setTimeout(() => {
-                    navigate(`/admin/tableproduct/${selectedTableID}`)
+                    navigate(`/${role}/tableproduct/${selectedTableID}`)
                 }, 3000);
             } catch (err) {
                 console.error(err);
@@ -175,7 +171,7 @@ const Tables: React.FC = () => {
                 setAlertMessage(`Đã vào bàn ${selectedTableID}, Đang chuyển hướng trang gọi món..`);
                 setOpenAlert(true);
                 setTimeout(() => {
-                    navigate(`/admin/tableproduct/${selectedTableID}`)
+                    navigate(`/${role}/tableproduct/${selectedTableID}`)
                 }, 3000);
 
             } catch (err) {
@@ -225,7 +221,7 @@ const Tables: React.FC = () => {
                             </div>
                             <div className="hover-icons">
                                 <i className="fa-solid fa-right-to-bracket" onClick={() => handleTableClick(table.tableID, table.tableStatus)}></i>
-                                <i style={{ marginLeft: '10px' }} className="fa-regular fa-eye"></i>
+                                <TableOrderDetailsDialog tableID={table.tableID}/>
                             </div>
                         </div>
                     </div>
@@ -240,7 +236,12 @@ const Tables: React.FC = () => {
                 style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}
             />
 
-            <Dialog open={openDialog} onClose={handleCloseDialog}>
+            <Dialog
+                open={openDialog}
+                onClose={handleCloseDialog}
+                aria-labelledby="dialog-title"
+                aria-describedby="dialog-description"
+            >
                 <DialogTitle>Xác nhận mở bàn</DialogTitle>
                 <DialogContent>
                     <DialogContentText>

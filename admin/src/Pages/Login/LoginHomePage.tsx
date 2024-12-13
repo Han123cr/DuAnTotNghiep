@@ -3,9 +3,9 @@
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { API_Url } from "../../../tsconfig.json"
 
-import AdminFormLogin from "../Components/Login/AdminLogin";
+import LoginHome from "../../Components/Login/LoginHome";
 
-const LoginPage = () => {
+const LoginHomePage = () => {
 
     return (
         <>
@@ -20,7 +20,7 @@ const LoginPage = () => {
             >
                 <div className="position-relative overflow-hidden radial-gradient min-vh-100 d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center justify-content-center w-100">  
-                        <AdminFormLogin/>
+                        <LoginHome/>
                     </div>
                 </div>
             </div>
@@ -29,4 +29,4 @@ const LoginPage = () => {
     )
 }
 
-export default LoginPage;
+export default LoginHomePage;
