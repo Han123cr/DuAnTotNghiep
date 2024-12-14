@@ -6,6 +6,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from "dayjs";
+import BillDetail from "./billDetail";
 
 interface Branch {
     branchID: string;
@@ -105,15 +106,8 @@ const Bills: React.FC = () => {
             field: 'function',
             headerName: 'Chức năng',
             width: 200,
-            renderCell: () => {
-                return (
-                    <a href="" className="btn btn-secondary btn-icon-split">
-                        <span className="icon text-white">
-                        <i className="fa-regular fa-eye"></i>
-                        </span>
-                        <span className="text">Xem chi tiết</span>
-                    </a>
-                )
+            renderCell: (params) => {
+                return <BillDetail tableBillID ={params.row.tableBillID}/>
             }
         },
     ];

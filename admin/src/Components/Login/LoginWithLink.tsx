@@ -37,6 +37,7 @@ const LoginWithLink: React.FC = () => {
                     setMessage('Đăng nhập thành công! Đang chuyển hướng...');
                     setOpen(true);
                     localStorage.setItem("isAuthenticated", "true");
+                    localStorage.setItem("role", "admin");
                     //Điều hướng trang
                     setTimeout(() => {
                         const isAuthenticated = localStorage.getItem("isAuthenticated");

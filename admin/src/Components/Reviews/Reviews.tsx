@@ -75,8 +75,8 @@ const Reviews: React.FC = () => {
             headerName: 'Loại',
             width: 180,
             renderCell: (params) => {
-                const { tableID, tableOrderID } = params.row;
-                if (tableID === null) {
+                const { orderID, tableOrderID } = params.row;
+                if (orderID === null) {
                     return 'Đơn đặt bàn';  // If tableID is null, it's an order
                 } else if (tableOrderID === null) {
                     return 'Đơn đặt hàng'; // If tableOrderID is null, it's a reservation

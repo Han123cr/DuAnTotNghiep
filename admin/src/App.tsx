@@ -58,7 +58,7 @@ function App() {
           {/* -------------------------------MANAGE--------------------------------------- */}
           <Route path={Routers.MANAGE_LOGIN} element={<ProtectedRoute isAuthenticated={isAuthenticated} isLoginPage><LoginSAMPage /></ProtectedRoute>} />
         </Routes>
-        <FooterWrapper/>
+        <FooterWrapper />
       </Router>
     </>
   )
@@ -66,13 +66,23 @@ function App() {
 
 function FooterWrapper() {
   const location = useLocation();
-  const shouldHideFooter = [
+
+  // Các đường dẫn mà Footer cần ẩn
+  const pathsToHideFooter = [
     Routers.ADMIN_TABLEPRODUCT,
     Routers.ADMIN_LOGIN,
+    Routers.ADMIN_LOGINWITHLINK,
+    Routers.MANAGE_LOGIN,
+    Routers.STAFF_LOGIN,
     Routers.LOGINHOME,
-  ].some((path) => location.pathname.includes(path));
+  ];
 
-  return !shouldHideFooter && <Footer />;
+  // Kiểm tra xem location.pathname có chứa bất kỳ phần nào của pathsToHideFooter không
+  const shouldHideFooter = pathsToHideFooter.some((path) =>
+    location.pathname === path
+  );
+
+  return shouldHideFooter ? null : <Footer />;
 }
 
 export default App

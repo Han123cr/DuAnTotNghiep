@@ -17,8 +17,8 @@ export const HeaderUl = () => {
   const location = useLocation();
   const role = localStorage.getItem('role');
 
-  const renderAdminOrManagerMenu = () => {
-    if (role === 'admin' || role === 'manage') {
+  const renderAdminMenu = () => {
+    if (role === 'admin') {
       return (
         <>
           <div className="sidebar-heading">Thống kê</div>
@@ -114,6 +114,82 @@ export const HeaderUl = () => {
     }
   }
 
+  const renderManagerMenu = () => {
+    if (role === 'manage') {
+      return (
+        <>
+          <div className="sidebar-heading">Thống kê</div>
+          {/* Thống kê báo cáo */}
+          <li className={`nav-item ${location.pathname === `${Routers.ADMIN_HOME}` ? 'active' : ''}`}>
+            <Link to={Routers.ADMIN_HOME} className="nav-link">
+              <i style={{ fontSize: 14 }} className="fas fa-fw fa-tachometer-alt" />
+              <span>Thống kê báo cáo</span>
+            </Link>
+          </li>
+          {/* Divider */}
+          <hr className="sidebar-divider" />
+          {/* Dịch vụ */}
+          <div className="sidebar-heading">Dịch vụ</div>
+          <li className={`nav-item ${location.pathname === `${Routers.ADMIN_TABLEORDERS}` ? 'active' : ''}`}>
+            <Link to={Routers.ADMIN_TABLEORDERS} className="nav-link">
+              <i style={{ fontSize: 15 }} className="fas fa-fw fa-clipboard" />
+              <span>Quản lý đơn đặt bàn</span>
+            </Link>
+          </li>
+          <li className={`nav-item ${location.pathname === `${Routers.ADMIN_TABLE}` ? 'active' : ''}`}>
+            <Link to={Routers.ADMIN_TABLE} className="nav-link">
+              <i style={{ fontSize: 14 }} className=" fas fa-fw fa-table" />
+              <span>Quản lý bàn</span>
+            </Link>
+          </li>
+          <li className={`nav-item ${location.pathname === `${Routers.ADMIN_BILL}` ? 'active' : ''}`}>
+            <Link to={Routers.ADMIN_BILL} className="nav-link">
+              <i style={{ fontSize: 15 }} className="fas fa-fw fa-receipt" />
+              <span>Quản lý hóa đơn</span>
+            </Link>
+          </li>
+          <hr className="sidebar-divider" />
+          {/* Quản lý đơn hàng */}
+          <div className="sidebar-heading">Đơn hàng</div>
+          <li className={`nav-item ${location.pathname === `${Routers.ADMIN_ORDERS}` ? 'active' : ''}`}>
+            <Link to={Routers.ADMIN_ORDERS} className="nav-link">
+              <i style={{ fontSize: 15 }} className="fas fa-fw fa-bag-shopping" />
+              <span>Quản lý đơn đặt hàng</span>
+            </Link>
+          </li>
+          <hr className="sidebar-divider" />
+          {/* Quản lý người dùng */}
+          <div className="sidebar-heading">Người dùng</div>
+          <li className={`nav-item ${location.pathname === `${Routers.ADMIN_STAFF}` ? 'active' : ''}`}>
+            <Link to={Routers.ADMIN_STAFF} className="nav-link">
+              <i style={{ fontSize: 14 }} className="fas fa-fw fa-address-book" />
+              <span>Quản lý nhân viên</span>
+            </Link>
+          </li>
+          {/* Divider */}
+          <hr className="sidebar-divider" />
+          {/* Quản lý đánh giá */}
+          <div className="sidebar-heading">Đánh giá</div>
+          <li className={`nav-item ${location.pathname === `${Routers.ADMIN_REVIEWS}` ? 'active' : ''}`}>
+            <Link to={Routers.ADMIN_REVIEWS} className="nav-link">
+              <i style={{ fontSize: 14 }} className="fas fa-fw fa-comments" />
+              <span>Quản lý đánh giá</span>
+            </Link>
+          </li>
+          <hr className="sidebar-divider" />
+          {/* Quản lý ưu đãi */}
+          <div className="sidebar-heading">Ưu đãi</div>
+          <li className={`nav-item ${location.pathname === `${Routers.ADMIN_VOUCHER}` ? 'active' : ''}`}>
+            <Link to={Routers.ADMIN_VOUCHER} className="nav-link">
+              <i style={{ fontSize: 15 }} className="fas fa-fw fa-tags" />
+              <span>Quản lý ưu đãi</span>
+            </Link>
+          </li>
+        </>
+      )
+    }
+  }
+
   const renderStaffMenu = () => {
     if (role === 'staff') {
       return (
@@ -152,7 +228,8 @@ export const HeaderUl = () => {
         {/* Divider */}
         <hr className="sidebar-divider" />
         {/* Heading */}
-        {renderAdminOrManagerMenu()}
+        {renderAdminMenu()}
+        {renderManagerMenu()}
         {renderStaffMenu()}
       </ul>
     </>
@@ -163,6 +240,8 @@ export const HeaderNav = () => {
 
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  const role = localStorage.getItem('role');
 
   const handleLogout = () => {
     //Xóa thông tin xác thực khỏi local
@@ -213,7 +292,7 @@ export const HeaderNav = () => {
               className="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
               aria-labelledby="searchDropdown"
             >
-              <form className="form-inline mr-auto w-100 navbar-search">
+              {/* <form className="form-inline mr-auto w-100 navbar-search">
                 <div className="input-group">
                   <input
                     type="text"
@@ -228,11 +307,13 @@ export const HeaderNav = () => {
                     </button>
                   </div>
                 </div>
-              </form>
+              </form> */}
             </div>
           </li>
           {/* Nav Item - Alerts */}
+          {role === 'admin' && (
           <NotificationDropdown />
+          )}
           {/* <div class="topbar-divider d-none d-sm-block"></div> */}
           {/* Nav Item - User Information */}
           <li className="nav-item dropdown no-arrow">

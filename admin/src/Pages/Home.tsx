@@ -8,6 +8,8 @@ import ReportDefault from '../Components/Report/DefaultReport'
 
 const Home = () => {
 
+  const role = localStorage.getItem('role')
+
   return (
     <div id="page-top">
       {/* Page Wrapper */}
@@ -37,7 +39,9 @@ const Home = () => {
               {/* Content Row */}
               <div className="row">
                 {/* Earnings (Monthly) Card Example */}
-                <ReportDefault/>
+                {role === 'admin' && (
+                  <ReportDefault/>
+                )}
                 {/* Content Row */}
                 <div className="row">
                   {/* Area Chart */}

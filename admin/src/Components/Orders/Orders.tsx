@@ -6,6 +6,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from "dayjs";
+import OrderDetail from "./OrderDetail";
 
 interface Order {
     orderID: number,
@@ -203,15 +204,8 @@ const Orders: React.FC = () => {
             field: 'function',
             headerName: 'Chức năng',
             width: 204,
-            renderCell: () => {
-                return (
-                    <a href="" className="btn btn-secondary btn-icon-split">
-                        <span className="icon text-white">
-                        <i className="fa-regular fa-eye"></i>
-                        </span>
-                        <span className="text">Xem chi tiết</span>
-                    </a>
-                )
+            renderCell: (params) => {
+                return <OrderDetail orderID ={params.row.orderID}/>
             }
         },
     ];
@@ -248,9 +242,9 @@ const Orders: React.FC = () => {
                     initialState={{ pagination: { paginationModel } }}
                     pageSizeOptions={[5, 10, 20, 30, 100]}
                     sx={{ border: 0 }}
-                    getRowClassName={(params) =>
-                        params.row.status === 'cancelled' ? 'cancelled-row' : ''
-                    }
+                    // getRowClassName={(params) =>
+                    //     params.row.status === 'cancelled' ? 'cancelled-row' : ''
+                    // }
                     disableRowSelectionOnClick
                     localeText={{
                         noRowsLabel: 'Không có đơn đặt hàng hôm nay',
